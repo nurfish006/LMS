@@ -44,10 +44,14 @@ export async function POST(request: Request) {
     }
 
     const db = await getDb()
+    const senderName = user.firstName && user.lastName 
+      ? `${user.firstName} ${user.lastName}` 
+      : (user.email as string) || "Unknown User"
+    
     const message: Message = {
-      senderId: user.userId,
-      senderName: `${user.firstName} ${user.lastName}`,
-      senderRole: user.role,
+      senderId: user.userId as string,
+      senderName,
+      senderRole: user.role as string,
       content: content.trim(),
       createdAt: new Date(),
     }

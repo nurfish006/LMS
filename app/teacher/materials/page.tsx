@@ -29,6 +29,9 @@ interface Course {
 export default function TeacherMaterialsPage() {
   const [courses, setCourses] = useState<Course[]>([])
   const [open, setOpen] = useState(false)
+  const [uploadMethod, setUploadMethod] = useState<"file" | "url">("file")
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
   const [formData, setFormData] = useState({
     courseId: "",
     title: "",
@@ -58,14 +61,48 @@ export default function TeacherMaterialsPage() {
     }
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0])
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setUploading(true)
 
     try {
+      let fileUrl = formData.fileUrl
+
+      if (uploadMethod === "file") {
+        if (!selectedFile) {
+          throw new Error("Please select a file")
+        }
+
+        const uploadFormData = new FormData()
+        uploadFormData.append("file", selectedFile)
+        uploadFormData.append("type", "material")
+
+        const uploadResponse = await fetch("/api/upload", {
+          method: "POST",
+          body: uploadFormData,
+        })
+
+        if (!uploadResponse.ok) {
+          throw new Error("Failed to upload file")
+        }
+
+        const uploadData = await uploadResponse.json()
+        fileUrl = uploadData.fileUrl
+      }
+
       const response = await fetch("/api/materials", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          fileUrl,
+        }),
       })
 
       if (response.ok) {
@@ -74,6 +111,7 @@ export default function TeacherMaterialsPage() {
           description: "Material uploaded successfully",
         })
         setOpen(false)
+        setSelectedFile(null)
         setFormData({
           courseId: "",
           title: "",
@@ -91,6 +129,8 @@ export default function TeacherMaterialsPage() {
         description: error.message,
         variant: "destructive",
       })
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -166,6 +206,8 @@ export default function TeacherMaterialsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="application/pdf">PDF Document</SelectItem>
+                    <SelectItem value="application/msword">Word Document</SelectItem>
+                    <SelectItem value="application/vnd.openxmlformats-officedocument.wordprocessingml.document">Word Document (DOCX)</SelectItem>
                     <SelectItem value="video/mp4">Video (MP4)</SelectItem>
                     <SelectItem value="audio/mpeg">Audio (MP3)</SelectItem>
                     <SelectItem value="application/zip">ZIP Archive</SelectItem>
@@ -174,22 +216,62 @@ export default function TeacherMaterialsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="fileUrl">File URL</Label>
-                <Input
-                  id="fileUrl"
-                  placeholder="https://example.com/lecture1.pdf"
-                  value={formData.fileUrl}
-                  onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
-                  required
-                />
-                <p className="text-xs text-muted-foreground">
-                  Upload your file to cloud storage and paste the URL here
-                </p>
+                <Label>Upload Method</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={uploadMethod === "file" ? "default" : "outline"}
+                    onClick={() => setUploadMethod("file")}
+                    className="flex-1"
+                  >
+                    Upload File
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={uploadMethod === "url" ? "default" : "outline"}
+                    onClick={() => setUploadMethod("url")}
+                    className="flex-1"
+                  >
+                    Provide URL
+                  </Button>
+                </div>
               </div>
 
-              <Button type="submit" className="w-full">
+              {uploadMethod === "file" ? (
+                <div className="space-y-2">
+                  <Label htmlFor="file">Select File</Label>
+                  <Input
+                    id="file"
+                    type="file"
+                    onChange={handleFileChange}
+                    accept=".pdf,.doc,.docx,.ppt,.pptx,.mp4,.mp3,.zip"
+                    required
+                  />
+                  {selectedFile && (
+                    <p className="text-xs text-muted-foreground">
+                      Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="fileUrl">File URL</Label>
+                  <Input
+                    id="fileUrl"
+                    placeholder="https://example.com/lecture1.pdf"
+                    value={formData.fileUrl}
+                    onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Upload your file to cloud storage and paste the URL here
+                  </p>
+                </div>
+              )}
+
+              <Button type="submit" className="w-full" disabled={uploading}>
                 <UploadIcon className="h-4 w-4 mr-2" />
-                Upload Material
+                {uploading ? "Uploading..." : "Upload Material"}
               </Button>
             </form>
           </DialogContent>

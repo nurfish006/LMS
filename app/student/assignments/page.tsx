@@ -36,7 +36,9 @@ interface Submission {
 export default function StudentAssignmentsPage() {
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [submissions, setSubmissions] = useState<Submission[]>([])
-  const [selectedFile, setSelectedFile] = useState<string>("")
+  const [selectedFileUrl, setSelectedFileUrl] = useState<string>("")
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [uploadMethod, setUploadMethod] = useState<"file" | "url">("file")
   const [submitting, setSubmitting] = useState(false)
   const { toast } = useToast()
 
@@ -73,8 +75,23 @@ export default function StudentAssignmentsPage() {
     }
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0])
+    }
+  }
+
   const handleSubmit = async (assignmentId: string) => {
-    if (!selectedFile) {
+    if (uploadMethod === "file" && !selectedFile) {
+      toast({
+        title: "Error",
+        description: "Please select a file",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (uploadMethod === "url" && !selectedFileUrl) {
       toast({
         title: "Error",
         description: "Please provide a file URL",
@@ -85,10 +102,30 @@ export default function StudentAssignmentsPage() {
 
     setSubmitting(true)
     try {
+      let fileUrl = selectedFileUrl
+
+      if (uploadMethod === "file" && selectedFile) {
+        const uploadFormData = new FormData()
+        uploadFormData.append("file", selectedFile)
+        uploadFormData.append("type", "submission")
+
+        const uploadResponse = await fetch("/api/upload", {
+          method: "POST",
+          body: uploadFormData,
+        })
+
+        if (!uploadResponse.ok) {
+          throw new Error("Failed to upload file")
+        }
+
+        const uploadData = await uploadResponse.json()
+        fileUrl = uploadData.fileUrl
+      }
+
       const response = await fetch("/api/submissions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assignmentId, fileUrl: selectedFile }),
+        body: JSON.stringify({ assignmentId, fileUrl }),
       })
 
       if (response.ok) {
@@ -97,7 +134,8 @@ export default function StudentAssignmentsPage() {
           description: "Assignment submitted successfully",
         })
         fetchSubmissions()
-        setSelectedFile("")
+        setSelectedFileUrl("")
+        setSelectedFile(null)
       } else {
         const data = await response.json()
         throw new Error(data.error)
@@ -203,17 +241,57 @@ export default function StudentAssignmentsPage() {
                           </DialogHeader>
                           <div className="space-y-4">
                             <div className="space-y-2">
-                              <Label htmlFor="fileUrl">File URL</Label>
-                              <Input
-                                id="fileUrl"
-                                placeholder="https://example.com/my-assignment.pdf"
-                                value={selectedFile}
-                                onChange={(e) => setSelectedFile(e.target.value)}
-                              />
-                              <p className="text-xs text-muted-foreground">
-                                Upload your file to cloud storage and paste the URL here
-                              </p>
+                              <Label>Upload Method</Label>
+                              <div className="flex gap-2">
+                                <Button
+                                  type="button"
+                                  variant={uploadMethod === "file" ? "default" : "outline"}
+                                  onClick={() => setUploadMethod("file")}
+                                  className="flex-1"
+                                >
+                                  Upload File
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant={uploadMethod === "url" ? "default" : "outline"}
+                                  onClick={() => setUploadMethod("url")}
+                                  className="flex-1"
+                                >
+                                  Provide URL
+                                </Button>
+                              </div>
                             </div>
+
+                            {uploadMethod === "file" ? (
+                              <div className="space-y-2">
+                                <Label htmlFor="file">Select File</Label>
+                                <Input
+                                  id="file"
+                                  type="file"
+                                  onChange={handleFileChange}
+                                  accept=".pdf,.doc,.docx,.ppt,.pptx,.zip"
+                                />
+                                {selectedFile && (
+                                  <p className="text-xs text-muted-foreground">
+                                    Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                                  </p>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                <Label htmlFor="fileUrl">File URL</Label>
+                                <Input
+                                  id="fileUrl"
+                                  placeholder="https://example.com/my-assignment.pdf"
+                                  value={selectedFileUrl}
+                                  onChange={(e) => setSelectedFileUrl(e.target.value)}
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                  Upload your file to cloud storage and paste the URL here
+                                </p>
+                              </div>
+                            )}
+
                             <Button
                               onClick={() => handleSubmit(assignment._id)}
                               disabled={submitting}

@@ -125,26 +125,32 @@ export default function TeacherMessagesPage() {
               messages.map((message) => {
                 const isOwnMessage = message.senderId === user?._id
                 return (
-                  <div key={message._id} className={`flex ${isOwnMessage ? "justify-end" : "justify-start"}`}>
+                  <div key={message._id} className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} mb-2`}>
                     <div className={`max-w-[70%] ${isOwnMessage ? "items-end" : "items-start"} flex flex-col gap-1`}>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">{message.senderName}</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${getRoleBadgeColor(message.senderRole)}`}>
-                          {message.senderRole}
-                        </span>
-                      </div>
+                      {!isOwnMessage && (
+                        <div className="flex items-center gap-2 px-1">
+                          <span className="text-sm font-semibold text-primary">
+                            {message.senderName || "Unknown User"}
+                          </span>
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${getRoleBadgeColor(message.senderRole)}`}>
+                            {message.senderRole}
+                          </span>
+                        </div>
+                      )}
                       <div
-                        className={`p-3 rounded-lg ${
-                          isOwnMessage ? "bg-primary text-primary-foreground" : "bg-card border"
+                        className={`px-4 py-2 rounded-2xl shadow-sm ${
+                          isOwnMessage 
+                            ? "bg-primary text-primary-foreground rounded-tr-md" 
+                            : "bg-card border rounded-tl-md"
                         }`}
                       >
                         <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
                         <p
                           className={`text-xs mt-1 ${
-                            isOwnMessage ? "text-primary-foreground/70" : "text-muted-foreground"
+                            isOwnMessage ? "text-primary-foreground/70 text-right" : "text-muted-foreground"
                           }`}
                         >
-                          {new Date(message.createdAt).toLocaleString()}
+                          {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
                     </div>

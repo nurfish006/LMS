@@ -26,10 +26,11 @@ async function initAdmin() {
     const hashedPassword = await bcrypt.hash("admin123", 10)
 
     const adminUser = {
-      name: "System Administrator",
       email: "admin@woldia.edu.et",
       password: hashedPassword,
       role: "admin",
+      firstName: "System",
+      lastName: "Administrator",
       createdAt: new Date(),
       updatedAt: new Date(),
     }

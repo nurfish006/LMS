@@ -30,4 +30,6 @@ export async function getDatabase(): Promise<Db> {
   return client.db("woldia_els")
 }
 
+export const getDb = getDatabase
+
 export default clientPromise

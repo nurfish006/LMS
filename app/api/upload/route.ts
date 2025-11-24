@@ -6,6 +6,9 @@ import { getDb } from "@/lib/mongodb"
 import type { UploadAsset } from "@/lib/models"
 import { randomUUID } from "crypto"
 
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 const MAX_FILE_SIZE = 50 * 1024 * 1024
 
 const ALLOWED_EXTENSIONS = {

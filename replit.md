@@ -104,15 +104,24 @@ This starts the Next.js server on port 5000 at 0.0.0.0.
 
 ### File Upload System
 The application uses a secure token-based file upload system:
-- Files uploaded through `/api/upload` receive unique UUID tokens
+- Files uploaded through `/api/upload` route handler
 - Upload metadata stored in `uploads` collection with expiration (24hrs)
 - Tokens are one-time use and linked to database records
-- Files stored in `/uploads` directory (outside web root)
+- Files stored in `/uploads` directory (outside web root) with subdirectories:
+  - `uploads/materials/` - Course material files
+  - `uploads/assignments/` - Assignment files
+  - `uploads/submissions/` - Student submission files
 - Downloads require record IDs (materialId/submissionId) for authorization
 - Backwards compatible with legacy HTTP URLs and `/uploads/...` paths
 
+**Technical Implementation:**
+- Uses Next.js App Router route handler with `formData()` API
+- Runtime set to `nodejs` and `dynamic` for proper file handling
+- `experimental.serverActions.bodySizeLimit: '50mb'` configured for future Server Action migration
+- Current implementation supports files based on platform limits (Replit has higher limits than Vercel)
+
 **Security Features:**
-- 50MB file size limit
+- 50MB file size limit (enforced in code)
 - MIME type validation (PDF, Word, PowerPoint, ZIP, video, audio)
 - File extension validation
 - Role-based upload permissions
@@ -133,7 +142,8 @@ Configured for autoscale deployment suitable for the stateless Next.js applicati
 - The application binds to 0.0.0.0:5000 to work with Replit's proxy system
 - Admin user updated with firstName="Admin" and lastName="User"
 - Messaging system displays sender names with fallback to email for users without firstName/lastName
-- File uploads stored in `/uploads` directory (gitignored)
+- File uploads stored in `/uploads` directory (gitignored except .gitkeep files for directory structure)
+- Upload directory structure is preserved using .gitkeep files in each subdirectory
 - Both new secure token system and legacy URL-based uploads supported simultaneously
 
 ## Known Limitations

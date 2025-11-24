@@ -53,6 +53,11 @@ desktop.ini
 .envrc
 storybook-static/
 
-# Uploaded files
-uploads/
+# Uploaded files (but keep directory structure with .gitkeep files)
+uploads/**
+!uploads/
+!uploads/materials/
+!uploads/assignments/
+!uploads/submissions/
+!uploads/**/.gitkeep
 public/uploads/

@@ -102,7 +102,8 @@ export default function StudentAssignmentsPage() {
 
     setSubmitting(true)
     try {
-      let fileUrl = selectedFileUrl
+      let tokenId: string | undefined
+      let fileUrl = uploadMethod === "url" ? selectedFileUrl : undefined
 
       if (uploadMethod === "file" && selectedFile) {
         const uploadFormData = new FormData()
@@ -115,17 +116,18 @@ export default function StudentAssignmentsPage() {
         })
 
         if (!uploadResponse.ok) {
-          throw new Error("Failed to upload file")
+          const errorData = await uploadResponse.json()
+          throw new Error(errorData.error || "Failed to upload file")
         }
 
         const uploadData = await uploadResponse.json()
-        fileUrl = uploadData.fileUrl
+        tokenId = uploadData.tokenId
       }
 
       const response = await fetch("/api/submissions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assignmentId, fileUrl }),
+        body: JSON.stringify({ assignmentId, tokenId, fileUrl }),
       })
 
       if (response.ok) {
@@ -138,7 +140,7 @@ export default function StudentAssignmentsPage() {
         setSelectedFile(null)
       } else {
         const data = await response.json()
-        throw new Error(data.error)
+        throw new Error(data.error || "Failed to submit assignment")
       }
     } catch (error: any) {
       toast({

@@ -84,6 +84,14 @@ export default function StudentCoursesPage() {
     return <FileText className="h-5 w-5" />
   }
 
+  const getDownloadUrl = (material: Material) => {
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(material.fileUrl)
+    if (isUUID) {
+      return `/api/download?materialId=${material._id}`
+    }
+    return material.fileUrl
+  }
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -159,7 +167,7 @@ export default function StudentCoursesPage() {
                           </div>
                         </div>
                         <Button size="sm" variant="outline" asChild className="w-full sm:w-auto bg-transparent">
-                          <a href={material.fileUrl} download>
+                          <a href={getDownloadUrl(material)} download>
                             <Download className="h-4 w-4 mr-2" />
                             Download
                           </a>

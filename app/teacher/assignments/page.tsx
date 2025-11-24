@@ -181,6 +181,14 @@ export default function TeacherAssignmentsPage() {
     }
   }
 
+  const getDownloadUrl = (submission: Submission) => {
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(submission.fileUrl)
+    if (isUUID) {
+      return `/api/download?submissionId=${submission._id}`
+    }
+    return submission.fileUrl
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -338,7 +346,7 @@ export default function TeacherAssignmentsPage() {
                         </p>
                       </div>
                       <Button size="sm" variant="outline" asChild>
-                        <a href={submission.fileUrl} target="_blank" rel="noopener noreferrer">
+                        <a href={getDownloadUrl(submission)} target="_blank" rel="noopener noreferrer">
                           View Submission
                         </a>
                       </Button>

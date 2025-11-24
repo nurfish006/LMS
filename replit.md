@@ -4,7 +4,19 @@
 This is a comprehensive web-based Learning Management System (LMS) for Woldia University that enables students to access course materials, submit assignments, and communicate with instructors. The platform supports multiple user roles: students, teachers, department heads, and administrators.
 
 ## Recent Changes
-**November 24, 2025**
+**November 24, 2025 - Latest Session**
+- Implemented secure file upload system with UUID-based tokens
+- Added `uploads` collection to track file metadata
+- Updated materials and submissions APIs to support file uploads
+- Created secure download API with record-level authorization
+- Updated frontend pages to properly handle file downloads
+- Fixed messaging system to display user names correctly (firstName + lastName)
+- Implemented Telegram-like messaging UI (sender on right, receiver on left)
+- Added fallback handling for users without firstName/lastName in messaging
+- Added backwards compatibility for legacy file URLs and paths
+- Files stored outside web root for security (new uploads)
+
+**November 24, 2025 - Initial Setup**
 - Configured project for Replit environment
 - Set up Next.js dev server on port 5000 with host 0.0.0.0
 - Configured Next.js 16 to use Turbopack
@@ -43,9 +55,15 @@ This is a comprehensive web-based Learning Management System (LMS) for Woldia Un
 
 ### File Structure
 - `/app` - Next.js app router pages and API routes
+  - `/app/api/upload` - Secure file upload endpoint
+  - `/app/api/download` - Secure file download endpoint with authorization
+  - `/app/api/materials` - Course materials management
+  - `/app/api/submissions` - Assignment submissions management
+  - `/app/api/messages` - Messaging system
 - `/components` - Reusable React components and UI primitives
 - `/lib` - Utility functions, database connection, models, auth
 - `/public` - Static assets (images, icons)
+- `/uploads` - Secure file storage (outside web root, gitignored)
 - `/scripts` - Database initialization scripts
 
 ## Environment Setup
@@ -82,6 +100,25 @@ This starts the Next.js server on port 5000 at 0.0.0.0.
 - `submissions` - Student assignment submissions
 - `messages` - User messages
 - `news` - University announcements
+- `uploads` - File upload metadata and tokens (new secure system)
+
+### File Upload System
+The application uses a secure token-based file upload system:
+- Files uploaded through `/api/upload` receive unique UUID tokens
+- Upload metadata stored in `uploads` collection with expiration (24hrs)
+- Tokens are one-time use and linked to database records
+- Files stored in `/uploads` directory (outside web root)
+- Downloads require record IDs (materialId/submissionId) for authorization
+- Backwards compatible with legacy HTTP URLs and `/uploads/...` paths
+
+**Security Features:**
+- 50MB file size limit
+- MIME type validation (PDF, Word, PowerPoint, ZIP, video, audio)
+- File extension validation
+- Role-based upload permissions
+- Record-level download authorization
+- UUID-based filenames prevent file enumeration
+- Safe HTTP headers (Content-Type, Content-Disposition, nosniff)
 
 ## Deployment Configuration
 Configured for autoscale deployment suitable for the stateless Next.js application. MongoDB connection required for full functionality.
@@ -94,3 +131,16 @@ Configured for autoscale deployment suitable for the stateless Next.js applicati
 - Images are unoptimized for faster development
 - Using Turbopack (Next.js 16 default)
 - The application binds to 0.0.0.0:5000 to work with Replit's proxy system
+- Admin user updated with firstName="Admin" and lastName="User"
+- Messaging system displays sender names with fallback to email for users without firstName/lastName
+- File uploads stored in `/uploads` directory (gitignored)
+- Both new secure token system and legacy URL-based uploads supported simultaneously
+
+## Known Limitations
+- Course enrollment checking not implemented (all authenticated users can access all materials)
+- For production use, consider:
+  - Implementing course enrollment validation
+  - Adding virus scanning for uploaded files
+  - Setting up automated cleanup of expired upload tokens
+  - Implementing file versioning for materials
+  - Adding file preview functionality

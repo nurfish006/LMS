@@ -72,7 +72,8 @@ export default function TeacherMaterialsPage() {
     setUploading(true)
 
     try {
-      let fileUrl = formData.fileUrl
+      let tokenId: string | undefined
+      let fileUrl = uploadMethod === "url" ? formData.fileUrl : undefined
 
       if (uploadMethod === "file") {
         if (!selectedFile) {
@@ -89,19 +90,24 @@ export default function TeacherMaterialsPage() {
         })
 
         if (!uploadResponse.ok) {
-          throw new Error("Failed to upload file")
+          const errorData = await uploadResponse.json()
+          throw new Error(errorData.error || "Failed to upload file")
         }
 
         const uploadData = await uploadResponse.json()
-        fileUrl = uploadData.fileUrl
+        tokenId = uploadData.tokenId
       }
 
       const response = await fetch("/api/materials", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...formData,
+          courseId: formData.courseId,
+          title: formData.title,
+          description: formData.description,
+          tokenId,
           fileUrl,
+          fileType: formData.fileType,
         }),
       })
 
@@ -121,7 +127,7 @@ export default function TeacherMaterialsPage() {
         })
       } else {
         const data = await response.json()
-        throw new Error(data.error)
+        throw new Error(data.error || "Failed to create material")
       }
     } catch (error: any) {
       toast({

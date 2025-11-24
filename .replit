@@ -1,0 +1,12 @@
+modules = ["nodejs-20", "web"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+JWT_SECRET = "3e320fcb1c7c8795ce170053e978b5396d4f03e46df4f0685ff79018eefff61b"
+NEXT_PUBLIC_APP_URL = "https://${REPL_SLUG}.${REPL_OWNER}.repl.co"

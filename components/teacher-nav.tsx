@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
 import { GraduationCap, BookOpen, FileText, MessageSquare, Newspaper, User, LogOut, Upload } from "lucide-react"
+import { ThemeToggle } from "@/components/theme-toggle"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +29,7 @@ export function TeacherNav() {
   ]
 
   return (
-    <nav className="bg-white border-b border-border">
+    <nav className="bg-white dark:bg-slate-950 border-b border-border">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
@@ -52,7 +53,9 @@ export function TeacherNav() {
             </div>
           </div>
 
-          <DropdownMenu>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="gap-2">
                 <User className="h-4 w-4" />
@@ -79,6 +82,7 @@ export function TeacherNav() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         </div>
       </div>
     </nav>

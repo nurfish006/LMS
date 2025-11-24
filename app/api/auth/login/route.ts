@@ -12,6 +12,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 })
     }
 
+    if (!process.env.MONGODB_URI) {
+      return NextResponse.json({ error: "Database configuration error" }, { status: 500 })
+    }
+
+    if (!process.env.JWT_SECRET) {
+      return NextResponse.json({ error: "Authentication configuration error" }, { status: 500 })
+    }
+
     const db = await getDatabase()
     const usersCollection = db.collection<User>("users")
 
@@ -51,8 +59,8 @@ export async function POST(request: NextRequest) {
         semester: user.semester,
       },
     })
-  } catch (error) {
-    console.error("[v0] Login error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  } catch (error: any) {
+    console.error("[v0] Login error:", error.message)
+    return NextResponse.json({ error: `Login failed: ${error.message}` }, { status: 500 })
   }
 }

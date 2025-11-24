@@ -71,9 +71,10 @@ export default function RegisterPage() {
       })
       router.push("/login")
     } catch (error: any) {
+      console.error("Registration error:", error)
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "An unexpected error occurred",
         variant: "destructive",
       })
     } finally {

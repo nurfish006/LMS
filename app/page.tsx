@@ -1,10 +1,11 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { BookOpen, Users, GraduationCap, Shield } from "lucide-react"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-slate-950 dark:to-slate-900">
       {/* Hero Section */}
       <header className="container mx-auto px-4 py-6">
         <nav className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -12,7 +13,8 @@ export default function HomePage() {
             <GraduationCap className="h-8 w-8 text-primary" />
             <span className="text-lg sm:text-xl font-bold text-foreground">Woldia University ELS</span>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
+            <ThemeToggle />
             <Link href="/login">
               <Button variant="outline">Login</Button>
             </Link>

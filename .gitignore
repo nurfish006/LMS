@@ -52,3 +52,7 @@ desktop.ini
 # Misc
 .envrc
 storybook-static/
+
+# Uploaded files
+uploads/
+public/uploads/

@@ -76,3 +76,18 @@ export interface News {
   createdBy: string
   createdAt: Date
 }
+
+export interface UploadAsset {
+  _id?: string
+  tokenId: string
+  uploadedBy: string
+  originalName: string
+  storagePath: string
+  mimeType: string
+  size: number
+  type: "material" | "assignment" | "submission"
+  linkedTo?: string
+  claimed: boolean
+  createdAt: Date
+  expiresAt: Date
+}

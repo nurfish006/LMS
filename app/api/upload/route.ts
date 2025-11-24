@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
 import { getSession } from "@/lib/auth"
+import { getDb } from "@/lib/mongodb"
+import type { UploadAsset } from "@/lib/models"
+import { randomUUID } from "crypto"
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024
 
@@ -99,26 +102,41 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
+    const tokenId = randomUUID()
     const timestamp = Date.now()
     const extension = file.name.split('.').pop()?.toLowerCase() || 'bin'
     const baseFileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name
     const sanitizedBaseName = baseFileName.replace(/[^a-zA-Z0-9-]/g, "_").substring(0, 100)
-    const fileName = `${timestamp}-${sanitizedBaseName}.${extension}`
+    const fileName = `${timestamp}-${tokenId}.${extension}`
     
-    const uploadDir = join(process.cwd(), "public", "uploads", `${type}s`)
+    const uploadDir = join(process.cwd(), "uploads", `${type}s`)
     await mkdir(uploadDir, { recursive: true })
     
     const filePath = join(uploadDir, fileName)
+    const storagePath = `uploads/${type}s/${fileName}`
     await writeFile(filePath, buffer)
 
-    const fileUrl = `/uploads/${type}s/${fileName}`
+    const db = await getDb()
+    const uploadAsset: UploadAsset = {
+      tokenId,
+      uploadedBy: session.userId as string,
+      originalName: file.name,
+      storagePath,
+      mimeType: file.type,
+      size: file.size,
+      type,
+      claimed: false,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+    }
+    
+    await db.collection("uploads").insertOne(uploadAsset)
 
     return NextResponse.json({ 
       success: true, 
-      fileUrl,
-      fileName: file.name,
-      size: file.size,
-      type: file.type
+      tokenId,
+      originalName: file.name,
+      size: file.size
     })
   } catch (error) {
     console.error("Upload error:", error)

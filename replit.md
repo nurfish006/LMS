@@ -5,16 +5,19 @@ This is a comprehensive web-based Learning Management System (LMS) for Woldia Un
 
 ## Recent Changes
 **November 24, 2025 - Latest Session**
-- Implemented secure file upload system with UUID-based tokens
-- Added `uploads` collection to track file metadata
-- Updated materials and submissions APIs to support file uploads
-- Created secure download API with record-level authorization
-- Updated frontend pages to properly handle file downloads
-- Fixed messaging system to display user names correctly (firstName + lastName)
-- Implemented Telegram-like messaging UI (sender on right, receiver on left)
-- Added fallback handling for users without firstName/lastName in messaging
-- Added backwards compatibility for legacy file URLs and paths
-- Files stored outside web root for security (new uploads)
+- Fixed file upload issues by creating missing uploads directory structure
+- Configured Next.js for 50MB file upload support with proper runtime settings
+- Updated .gitignore to preserve upload directory structure using .gitkeep files
+- Redesigned messaging UI with modern, attractive interface:
+  - Added gradient avatar circles with user initials
+  - Implemented sleek message bubbles with smart grouping
+  - Added role-based color coding (Admin=red, Teacher=blue, Head=purple, Student=gray)
+  - Improved timestamp formatting (Just now, 5m ago, 2h ago, etc.)
+  - Added backdrop blur effects and smooth animations
+  - Redesigned input area with rounded, modern styling
+  - Improved empty state with icons and friendly messaging
+  - Better mobile responsiveness and touch interactions
+  - Applied consistent design across Student, Teacher, and Admin messaging pages
 
 **November 24, 2025 - Initial Setup**
 - Configured project for Replit environment

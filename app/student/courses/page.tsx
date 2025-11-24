@@ -85,29 +85,41 @@ export default function StudentCoursesPage() {
   }
 
   if (loading) {
-    return <div>Loading courses...</div>
+    return (
+      <div className="space-y-6">
+        <div className="h-8 w-48 bg-muted animate-pulse rounded" />
+        <div className="grid md:grid-cols-4 gap-6">
+          <div className="space-y-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-16 bg-muted animate-pulse rounded" />
+            ))}
+          </div>
+          <div className="md:col-span-3 h-96 bg-muted animate-pulse rounded" />
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold mb-2">My Courses</h1>
-        <p className="text-muted-foreground">Access course materials and resources</p>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">My Courses</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Access course materials and resources</p>
       </div>
 
-      <div className="grid md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         {/* Course List */}
         <div className="md:col-span-1 space-y-2">
-          <h2 className="font-semibold mb-4">Enrolled Courses</h2>
+          <h2 className="font-semibold mb-4 text-sm sm:text-base">Enrolled Courses</h2>
           {courses.map((course) => (
             <Button
               key={course._id}
               variant={selectedCourse === course._id ? "default" : "outline"}
-              className="w-full justify-start"
+              className="w-full justify-start text-left h-auto py-3"
               onClick={() => setSelectedCourse(course._id)}
             >
               <div className="text-left">
-                <div className="font-medium">{course.code}</div>
+                <div className="font-medium text-xs sm:text-sm">{course.code}</div>
                 <div className="text-xs">{course.title}</div>
               </div>
             </Button>
@@ -119,27 +131,34 @@ export default function StudentCoursesPage() {
           {selectedCourse && (
             <Card>
               <CardHeader>
-                <CardTitle>Course Materials</CardTitle>
-                <CardDescription>{courses.find((c) => c._id === selectedCourse)?.description}</CardDescription>
+                <CardTitle className="text-lg sm:text-xl">Course Materials</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
+                  {courses.find((c) => c._id === selectedCourse)?.description}
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {materials.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">No materials available yet</p>
+                  <p className="text-muted-foreground text-center py-8 text-sm">No materials available yet</p>
                 ) : (
                   <div className="space-y-3">
                     {materials.map((material) => (
-                      <div key={material._id} className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                        <div className="flex items-center gap-3">
+                      <div
+                        key={material._id}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-muted rounded-lg gap-3"
+                      >
+                        <div className="flex items-start sm:items-center gap-3">
                           {getFileIcon(material.fileType)}
-                          <div>
-                            <p className="font-medium">{material.title}</p>
-                            <p className="text-sm text-muted-foreground">{material.description}</p>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm sm:text-base truncate">{material.title}</p>
+                            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1">
+                              {material.description}
+                            </p>
                             <p className="text-xs text-muted-foreground">
                               {new Date(material.createdAt).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
-                        <Button size="sm" variant="outline" asChild>
+                        <Button size="sm" variant="outline" asChild className="w-full sm:w-auto bg-transparent">
                           <a href={material.fileUrl} download>
                             <Download className="h-4 w-4 mr-2" />
                             Download

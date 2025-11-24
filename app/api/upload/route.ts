@@ -117,14 +117,15 @@ export async function POST(request: NextRequest) {
     await writeFile(filePath, buffer)
 
     const db = await getDb()
-    const uploadAsset: UploadAsset = {
+    const uploadType = type as "material" | "assignment" | "submission"
+    const uploadAsset = {
       tokenId,
       uploadedBy: session.userId as string,
       originalName: file.name,
       storagePath,
       mimeType: file.type,
       size: file.size,
-      type,
+      type: uploadType,
       claimed: false,
       createdAt: new Date(),
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)

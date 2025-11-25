@@ -1,472 +1,243 @@
-# Woldia University E-Learning System (WDUELS)
+# Woldia University LMS
 
-A comprehensive web-based Learning Management System (LMS) designed for Woldia University to enhance education through digital innovation. This platform enables students to access course materials, submit assignments, and communicate with instructors anytime, anywhere.
+A comprehensive Learning Management System built with Next.js 15, React 19, and MongoDB.
 
 ## Features
 
-### For Students
-- View and enroll in courses by department
-- Download course materials and lecture notes
-- Submit assignments online
-- Track assignment deadlines and grades
-- Real-time messaging with instructors and peers
-- View university news and announcements
-- Manage personal profile
+- **Multi-role Authentication**: Student, Teacher, Admin, and Department Head roles
+- **Course Management**: Create, manage, and enroll in courses
+- **Materials & Assignments**: Upload materials and submit assignments
+- **Messaging System**: Direct messaging between users
+- **News & Announcements**: Admin-published news and updates
+- **File Upload**: Cloud-based file storage with Vercel Blob
+- **Dark/Light Mode**: Theme toggle support
 
-### For Teachers
-- Create and manage courses
-- Upload course materials (documents, videos, etc.)
-- Create and manage assignments
-- Grade student submissions
-- View submitted assignments by course
-- Communicate with students via messaging
-- Publish course announcements
+## Tech Stack
 
-### For Administrators
-- Manage user accounts (students, teachers, heads)
-- Create, update, and delete user accounts
-- Publish university-wide news and announcements
-- View system statistics and analytics
-- Manage departments and courses
-- Monitor system activity
-
-### For Department Heads
-- Oversee departmental courses
-- Manage course content within their department
-- View departmental statistics
-- Publish department-specific news
-
-## Technology Stack
-
-### Frontend
-- **Framework**: Next.js 15 (App Router)
-- **UI Library**: React 19
-- **Styling**: Tailwind CSS v4
-- **UI Components**: shadcn/ui
-- **Icons**: Lucide React
-- **State Management**: React Context API
-- **Form Handling**: React Hook Form (recommended)
-
-### Backend
-- **Runtime**: Node.js
-- **Framework**: Next.js API Routes
+- **Frontend**: Next.js 15, React 19, Tailwind CSS v4
+- **Backend**: Next.js API Routes
+- **Database**: MongoDB with Mongoose
 - **Authentication**: JWT (JSON Web Tokens)
-- **Password Hashing**: bcryptjs
+- **File Storage**: Vercel Blob
+- **Icons**: Lucide React
 
-### Database
-- **Database**: MongoDB
-- **ODM**: Native MongoDB Node.js Driver
+## Environment Variables
 
-## Prerequisites
-
-Before you begin, ensure you have the following installed:
-- **Node.js**: Version 18.x or higher
-- **npm** or **yarn**: Latest version
-- **MongoDB**: Version 5.x or higher (local installation or MongoDB Atlas account)
-- **Git**: For version control
-
-## Environment Setup
-
-### 1. Clone the Repository
-
-\`\`\`bash
-git clone <repository-url>
-cd woldia-university-els
-\`\`\`
-
-### 2. Install Dependencies
-
-\`\`\`bash
-npm install
-# or
-yarn install
-\`\`\`
-
-### 3. Configure Environment Variables
-
-Create a `.env.local` file in the root directory of the project and add the following environment variables:
+Create a `.env.local` file in the root directory with the following variables:
 
 \`\`\`env
 # MongoDB Connection
-MONGODB_URI=mongodb://localhost:27017/wduels
-# For MongoDB Atlas, use:
-# MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/wduels?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>?retryWrites=true&w=majority
 
-# JWT Secret (generate a random string)
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+# JWT Secret (generate a secure random string)
+JWT_SECRET=your-super-secure-jwt-secret-key-here
 
-# Next.js Configuration
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+# Vercel Blob (for file uploads)
+BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxxxxxxxxxxx
 \`\`\`
 
-#### Generating a Secure JWT Secret
+## Getting Environment Variables
 
-To generate a secure random JWT secret, run:
+### 1. MongoDB URI
+
+1. Create a free account at [MongoDB Atlas](https://www.mongodb.com/atlas)
+2. Create a new cluster (free tier available)
+3. Click **Connect** → **Connect your application**
+4. Copy the connection string
+5. Replace `<username>`, `<password>`, and `<database>` with your credentials
+
+### 2. JWT Secret
+
+Generate a secure random string using one of these methods:
 
 \`\`\`bash
+# Using OpenSSL
+openssl rand -hex 32
+
+# Using Node.js
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 \`\`\`
 
-### 4. Set Up MongoDB
+### 3. Vercel Blob Token
 
-#### Option A: Local MongoDB Installation
+**Option A: Via Vercel Dashboard (Recommended for Production)**
 
-1. Install MongoDB Community Edition from [mongodb.com](https://www.mongodb.com/try/download/community)
-2. Start the MongoDB service:
-   \`\`\`bash
-   # macOS (with Homebrew)
-   brew services start mongodb-community
-   
-   # Linux (systemd)
-   sudo systemctl start mongod
-   
-   # Windows
-   # MongoDB runs as a service after installation
-   \`\`\`
-3. Verify MongoDB is running:
-   \`\`\`bash
-   mongosh
-   \`\`\`
+1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
+2. Select your project or create a new one
+3. Navigate to **Storage** tab
+4. Click **Create Database** → Select **Blob**
+5. Follow the setup wizard
+6. The `BLOB_READ_WRITE_TOKEN` will be automatically added to your project's environment variables
 
-#### Option B: MongoDB Atlas (Cloud)
-
-1. Create a free account at [mongodb.com/atlas](https://www.mongodb.com/atlas)
-2. Create a new cluster
-3. Add your IP address to the IP whitelist (or use 0.0.0.0/0 for development)
-4. Create a database user with read/write permissions
-5. Get your connection string and update `MONGODB_URI` in `.env.local`
-
-### 5. Initialize the Database
-
-The application will automatically create the necessary collections on first run. However, you need to create an initial admin account.
-
-#### Create Initial Admin User
-
-Run the database initialization script:
+**Option B: Via Vercel CLI**
 
 \`\`\`bash
-node scripts/init-admin.js
+# Install Vercel CLI
+npm i -g vercel
+
+# Login to Vercel
+vercel login
+
+# Link your project
+vercel link
+
+# Create Blob store
+vercel blob create my-lms-storage
+
+# Pull environment variables
+vercel env pull .env.local
 \`\`\`
 
-Or manually create an admin user through MongoDB:
+## Installation
 
-\`\`\`javascript
-// Connect to MongoDB
-mongosh "mongodb://localhost:27017/wduels"
-
-// Create admin user
-db.users.insertOne({
-  name: "System Admin",
-  email: "admin@woldia.edu.et",
-  password: "$2a$10$X4qE.YqhpJJ7VX3g5F0Qce7KZQzQXJXxXxXxXxXxXxXxXxXxXx", // hashed "admin123"
-  role: "admin",
-  createdAt: new Date(),
-  updatedAt: new Date()
-})
-\`\`\`
-
-Default credentials:
-- **Email**: admin@woldia.edu.et
-- **Password**: admin123 (change immediately after first login)
-
-### 6. Run the Development Server
+### Local Development
 
 \`\`\`bash
+# Clone the repository
+git clone https://github.com/nurfish006/LMS.git
+cd LMS
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env.local
+# Edit .env.local with your values
+
+# Run the development server
 npm run dev
-# or
-yarn dev
 \`\`\`
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Database Schema
+### Deploy to Vercel
 
-### Users Collection
+1. Push your code to GitHub
+2. Go to [Vercel](https://vercel.com/new)
+3. Import your repository
+4. Add environment variables in the Vercel dashboard:
+   - `MONGODB_URI`
+   - `JWT_SECRET`
+   - `BLOB_READ_WRITE_TOKEN` (auto-added if you create Blob storage)
+5. Click **Deploy**
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/nurfish006/LMS)
+
+## Default User Roles
+
+After registration, users are assigned the **student** role by default. To create admin or teacher accounts:
+
+1. Register a new user
+2. Connect to your MongoDB database
+3. Update the user's role:
+
 \`\`\`javascript
-{
-  _id: ObjectId,
-  name: String,
-  email: String (unique),
-  password: String (hashed),
-  role: String (enum: "student", "teacher", "admin", "head"),
-  department: String (optional),
-  year: Number (for students),
-  semester: Number (for students),
-  createdAt: Date,
-  updatedAt: Date
-}
+// In MongoDB Shell or Compass
+db.users.updateOne(
+  { email: "admin@example.com" },
+  { $set: { role: "admin" } }
+)
 \`\`\`
 
-### Courses Collection
-\`\`\`javascript
-{
-  _id: ObjectId,
-  title: String,
-  description: String,
-  code: String,
-  department: String,
-  teacherId: ObjectId (ref: users),
-  teacherName: String,
-  semester: Number,
-  year: Number,
-  createdAt: Date,
-  updatedAt: Date
-}
-\`\`\`
-
-### Materials Collection
-\`\`\`javascript
-{
-  _id: ObjectId,
-  title: String,
-  description: String,
-  courseId: ObjectId (ref: courses),
-  courseName: String,
-  fileUrl: String,
-  fileType: String,
-  uploadedBy: ObjectId (ref: users),
-  uploadedByName: String,
-  createdAt: Date
-}
-\`\`\`
-
-### Assignments Collection
-\`\`\`javascript
-{
-  _id: ObjectId,
-  title: String,
-  description: String,
-  courseId: ObjectId (ref: courses),
-  courseName: String,
-  dueDate: Date,
-  totalMarks: Number,
-  createdBy: ObjectId (ref: users),
-  createdByName: String,
-  createdAt: Date
-}
-\`\`\`
-
-### Submissions Collection
-\`\`\`javascript
-{
-  _id: ObjectId,
-  assignmentId: ObjectId (ref: assignments),
-  studentId: ObjectId (ref: users),
-  studentName: String,
-  fileUrl: String,
-  submittedAt: Date,
-  grade: Number (optional),
-  feedback: String (optional),
-  gradedBy: ObjectId (ref: users, optional),
-  gradedAt: Date (optional)
-}
-\`\`\`
-
-### Messages Collection
-\`\`\`javascript
-{
-  _id: ObjectId,
-  senderId: ObjectId (ref: users),
-  senderName: String,
-  senderRole: String,
-  content: String,
-  createdAt: Date
-}
-\`\`\`
-
-### News Collection
-\`\`\`javascript
-{
-  _id: ObjectId,
-  title: String,
-  content: String,
-  publishedBy: ObjectId (ref: users),
-  publishedByName: String,
-  createdAt: Date,
-  updatedAt: Date
-}
-\`\`\`
+Available roles: `student`, `teacher`, `admin`, `department_head`
 
 ## Project Structure
 
 \`\`\`
-woldia-university-els/
 ├── app/
 │   ├── (auth)/
 │   │   ├── login/
 │   │   └── register/
-│   ├── student/
-│   │   ├── courses/
-│   │   ├── assignments/
-│   │   ├── messages/
-│   │   ├── news/
-│   │   ├── profile/
-│   │   └── page.tsx
-│   ├── teacher/
-│   │   ├── courses/
-│   │   ├── materials/
-│   │   ├── assignments/
-│   │   ├── messages/
-│   │   ├── news/
-│   │   ├── profile/
-│   │   └── page.tsx
 │   ├── admin/
-│   │   ├── users/
-│   │   ├── news/
 │   │   ├── messages/
-│   │   └── page.tsx
+│   │   ├── news/
+│   │   └── users/
 │   ├── api/
 │   │   ├── auth/
 │   │   ├── courses/
 │   │   ├── materials/
-│   │   ├── assignments/
-│   │   ├── submissions/
 │   │   ├── messages/
 │   │   ├── news/
+│   │   ├── submissions/
+│   │   ├── upload/
 │   │   └── users/
-│   ├── about/
-│   ├── globals.css
-│   ├── layout.tsx
-│   └── page.tsx
+│   ├── student/
+│   │   ├── assignments/
+│   │   ├── courses/
+│   │   ├── messages/
+│   │   ├── news/
+│   │   └── profile/
+│   └── teacher/
+│       ├── assignments/
+│       ├── courses/
+│       ├── materials/
+│       ├── messages/
+│       └── news/
 ├── components/
 │   ├── ui/
+│   ├── admin-nav.tsx
 │   ├── auth-provider.tsx
+│   ├── file-upload.tsx
 │   ├── student-nav.tsx
 │   ├── teacher-nav.tsx
-│   └── admin-nav.tsx
+│   └── theme-toggle.tsx
 ├── lib/
-│   ├── mongodb.ts
-│   ├── models.ts
 │   ├── auth.ts
-│   └── utils.ts
-├── scripts/
-│   └── init-admin.js
-├── .env.local
-├── package.json
-├── next.config.mjs
-├── tsconfig.json
-└── README.md
+│   ├── models.ts
+│   └── mongodb.ts
+└── public/
 \`\`\`
 
-## API Routes
+## API Endpoints
 
 ### Authentication
 - `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - User login
-- `POST /api/auth/logout` - User logout
+- `POST /api/auth/login` - Login user
+- `POST /api/auth/logout` - Logout user
 - `GET /api/auth/me` - Get current user
 
 ### Courses
-- `GET /api/courses` - Get all courses (filtered by role/department)
-- `POST /api/courses` - Create new course (teachers only)
-- `DELETE /api/courses/[id]` - Delete course (teachers/admin only)
+- `GET /api/courses` - Get all courses
+- `POST /api/courses` - Create course (teacher/admin)
 
 ### Materials
-- `GET /api/materials` - Get all materials (filtered by course)
-- `POST /api/materials` - Upload material (teachers only)
-- `DELETE /api/materials/[id]` - Delete material (teachers only)
+- `GET /api/materials` - Get materials
+- `POST /api/materials` - Upload material (teacher)
 
 ### Assignments
-- `GET /api/assignments` - Get all assignments (filtered by course)
-- `POST /api/assignments` - Create assignment (teachers only)
-- `DELETE /api/assignments/[id]` - Delete assignment (teachers only)
+- `GET /api/assignments` - Get assignments
+- `POST /api/assignments` - Create assignment (teacher)
 
 ### Submissions
-- `GET /api/submissions` - Get submissions (filtered by assignment/student)
-- `POST /api/submissions` - Submit assignment (students only)
-- `PUT /api/submissions/[id]/grade` - Grade submission (teachers only)
+- `GET /api/submissions` - Get submissions
+- `POST /api/submissions` - Submit assignment (student)
+- `POST /api/submissions/[id]/grade` - Grade submission (teacher)
 
 ### Messages
-- `GET /api/messages` - Get all messages
-- `POST /api/messages` - Send message (all authenticated users)
+- `GET /api/messages` - Get messages/conversations
+- `POST /api/messages` - Send message
 
 ### News
-- `GET /api/news` - Get all news
-- `POST /api/news` - Publish news (admin/head only)
-- `PUT /api/news/[id]` - Update news (admin/head only)
-- `DELETE /api/news/[id]` - Delete news (admin/head only)
+- `GET /api/news` - Get news articles
+- `POST /api/news` - Create news (admin)
+- `DELETE /api/news/[id]` - Delete news (admin)
 
 ### Users
-- `GET /api/users` - Get all users (admin only)
-- `POST /api/users` - Create user (admin only)
-- `DELETE /api/users/[id]` - Delete user (admin only)
+- `GET /api/users` - Get users (admin)
+- `DELETE /api/users/[id]` - Delete user (admin)
 
-## User Roles & Permissions
-
-| Feature | Student | Teacher | Head | Admin |
-|---------|---------|---------|------|-------|
-| View Courses | ✓ (own dept) | ✓ | ✓ | ✓ |
-| Create Course | ✗ | ✓ | ✓ | ✗ |
-| Upload Material | ✗ | ✓ | ✓ | ✗ |
-| Submit Assignment | ✓ | ✗ | ✗ | ✗ |
-| Grade Submission | ✗ | ✓ | ✓ | ✗ |
-| Manage Users | ✗ | ✗ | ✗ | ✓ |
-| Publish News | ✗ | ✗ | ✓ | ✓ |
-| Send Messages | ✓ | ✓ | ✓ | ✓ |
-
-## Deployment
-
-### Deploy to Vercel
-
-1. Push your code to GitHub
-2. Import your repository in Vercel
-3. Add environment variables in Vercel dashboard:
-   - `MONGODB_URI`
-   - `JWT_SECRET`
-   - `NEXT_PUBLIC_APP_URL`
-4. Deploy
-
-### Deploy to Other Platforms
-
-The application can be deployed to any platform that supports Next.js:
-- **Netlify**: Use the Next.js build plugin
-- **Railway**: Connect GitHub and deploy
-- **AWS/DigitalOcean**: Use Docker or PM2
-
-## Security Best Practices
-
-1. **Never commit `.env.local`** to version control
-2. **Use strong JWT secrets** in production
-3. **Enable MongoDB authentication** in production
-4. **Use HTTPS** for all production deployments
-5. **Implement rate limiting** for API routes
-6. **Regularly update dependencies** for security patches
-7. **Validate and sanitize** all user inputs
-8. **Use environment-specific** MongoDB databases
-
-## Troubleshooting
-
-### MongoDB Connection Issues
-- Ensure MongoDB is running: `mongosh`
-- Check your `MONGODB_URI` in `.env.local`
-- Verify network access if using MongoDB Atlas
-
-### Authentication Issues
-- Clear browser cookies and localStorage
-- Verify `JWT_SECRET` is set in `.env.local`
-- Check if the user exists in the database
-
-### Build Errors
-- Delete `.next` folder and `node_modules`
-- Run `npm install` again
-- Clear npm cache: `npm cache clean --force`
-
-## Contributing
-
-This project was developed as a senior project for Woldia University Computer Science Department by:
-- Haymanot Adane (WDU1201098)
-- Muaz Umer (WDU1201536)
-- Salih Mohammed (WDU1201721)
-- Yisehak Mulugeta (WDU1202178)
-- Yitayew Ahmed (WDU1202180)
-
-## Support
-
-For issues and questions:
-- Check the documentation above
-- Review error logs in the console
-- Contact the ICT directorate at Woldia University
+### File Upload
+- `POST /api/upload` - Upload file to Vercel Blob
+- `DELETE /api/upload` - Delete file from Vercel Blob
 
 ## License
 
-Copyright © 2023 Woldia University. All rights reserved.
+MIT License - feel free to use this project for educational purposes.
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request

@@ -1,10 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { writeFile, mkdir } from "fs/promises"
-import { join } from "path"
+import { put, del } from "@vercel/blob"
 import { getSession } from "@/lib/auth"
-
-// Configure upload directory
-const UPLOAD_DIR = join(process.cwd(), "public", "uploads")
 
 // Allowed file types
 const ALLOWED_TYPES = [
@@ -53,33 +49,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "File too large. Maximum size is 50MB" }, { status: 400 })
     }
 
-    // Create upload directory if it doesn't exist
-    try {
-      await mkdir(UPLOAD_DIR, { recursive: true })
-    } catch (err) {
-      // Directory might already exist
-    }
-
-    // Generate unique filename
+    // Generate unique filename with folder structure
     const timestamp = Date.now()
     const randomStr = Math.random().toString(36).substring(2, 8)
-    const extension = file.name.split(".").pop() || "bin"
     const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_").substring(0, 50)
-    const filename = `${timestamp}-${randomStr}-${sanitizedName}`
+    const pathname = `uploads/${timestamp}-${randomStr}-${sanitizedName}`
 
-    // Convert file to buffer and save
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const filepath = join(UPLOAD_DIR, filename)
-
-    await writeFile(filepath, buffer)
-
-    // Return the public URL
-    const fileUrl = `/uploads/${filename}`
+    // Upload to Vercel Blob
+    const blob = await put(pathname, file, {
+      access: "public",
+      addRandomSuffix: false,
+    })
 
     return NextResponse.json({
       message: "File uploaded successfully",
-      fileUrl,
+      fileUrl: blob.url,
       fileName: file.name,
       fileSize: file.size,
       fileType: file.type,
@@ -87,6 +71,29 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Upload error:", error)
     return NextResponse.json({ error: "Failed to upload file" }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getSession()
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const url = searchParams.get("url")
+
+    if (!url) {
+      return NextResponse.json({ error: "No URL provided" }, { status: 400 })
+    }
+
+    await del(url)
+
+    return NextResponse.json({ message: "File deleted successfully" })
+  } catch (error) {
+    console.error("Delete error:", error)
+    return NextResponse.json({ error: "Failed to delete file" }, { status: 500 })
   }
 }
 

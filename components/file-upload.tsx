@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { Upload, X, FileText, ImageIcon, File, CheckCircle } from "lucide-react"
+import { Upload, X, FileText, ImageIcon, File, CheckCircle, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 interface FileUploadProps {
@@ -54,24 +54,43 @@ export function FileUpload({
       const formData = new FormData()
       formData.append("file", file)
 
-      // Simulate progress
-      const progressInterval = setInterval(() => {
-        setProgress((prev) => Math.min(prev + 10, 90))
-      }, 200)
+      const xhr = new XMLHttpRequest()
 
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
+      const uploadPromise = new Promise<{ fileUrl: string; fileName: string }>((resolve, reject) => {
+        xhr.upload.addEventListener("progress", (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = Math.round((event.loaded / event.total) * 90)
+            setProgress(percentComplete)
+          }
+        })
+
+        xhr.addEventListener("load", () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            const data = JSON.parse(xhr.responseText)
+            resolve(data)
+          } else {
+            try {
+              const error = JSON.parse(xhr.responseText)
+              reject(new Error(error.error || "Upload failed"))
+            } catch {
+              reject(new Error("Upload failed"))
+            }
+          }
+        })
+
+        xhr.addEventListener("error", () => {
+          reject(new Error("Network error during upload"))
+        })
+
+        xhr.addEventListener("abort", () => {
+          reject(new Error("Upload cancelled"))
+        })
+
+        xhr.open("POST", "/api/upload")
+        xhr.send(formData)
       })
 
-      clearInterval(progressInterval)
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Upload failed")
-      }
-
-      const data = await response.json()
+      const data = await uploadPromise
       setProgress(100)
       setUploadedFile({ name: file.name, url: data.fileUrl })
       onUploadComplete(data.fileUrl, file.name)
@@ -84,7 +103,16 @@ export function FileUpload({
     }
   }
 
-  const handleRemove = () => {
+  const handleRemove = async () => {
+    if (uploadedFile?.url) {
+      try {
+        await fetch(`/api/upload?url=${encodeURIComponent(uploadedFile.url)}`, {
+          method: "DELETE",
+        })
+      } catch (error) {
+        // Silently fail - file might already be deleted
+      }
+    }
     setUploadedFile(null)
     if (inputRef.current) {
       inputRef.current.value = ""
@@ -122,7 +150,7 @@ export function FileUpload({
           className="w-full h-24 border-dashed"
         >
           <div className="flex flex-col items-center gap-2">
-            <Upload className="h-6 w-6" />
+            {uploading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Upload className="h-6 w-6" />}
             <span>{uploading ? "Uploading..." : "Click to upload file"}</span>
             <span className="text-xs text-muted-foreground">Max {maxSize}MB</span>
           </div>

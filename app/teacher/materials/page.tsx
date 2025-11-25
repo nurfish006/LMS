@@ -17,7 +17,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { FileUpload } from "@/components/file-upload"
+// Assuming your FileUpload component is correctly exported from this path
+import { FileUpload } from "@/components/file-upload" 
 import { Plus, FileText, Download, Trash2, Loader2, Upload } from "lucide-react"
 import { format } from "date-fns"
 
@@ -48,7 +49,10 @@ export default function TeacherMaterialsPage() {
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [uploadedFile, setUploadedFile] = useState<{ url: string; tokenId: string; filename: string } | null>(null)
+  
+  // 💡 FIX: Simplified state to match the FileUpload component's output
+  const [uploadedFile, setUploadedFile] = useState<{ url: string; filename: string } | null>(null) 
+  
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -93,7 +97,8 @@ export default function TeacherMaterialsPage() {
   }, [selectedCourse])
 
   const handleUpload = async () => {
-    if (!selectedCourse || !formData.title || !uploadedFile) {
+    // 💡 FIX: Check for uploadedFile and its url property
+    if (!selectedCourse || !formData.title || !uploadedFile || !uploadedFile.url) { 
       toast({ title: "Please fill in all required fields and upload a file", variant: "destructive" })
       return
     }
@@ -107,8 +112,9 @@ export default function TeacherMaterialsPage() {
           courseId: selectedCourse,
           title: formData.title,
           description: formData.description,
-          fileUrl: uploadedFile.url,
-          tokenId: uploadedFile.tokenId,
+          // 💡 FIX: Pass the url directly
+          fileUrl: uploadedFile.url, 
+          // 💡 Note: Removed 'tokenId' as it is not returned by the current FileUpload implementation
           fileType: "file",
         }),
       })
@@ -134,10 +140,13 @@ export default function TeacherMaterialsPage() {
     if (!confirm("Are you sure you want to delete this material?")) return
 
     try {
+      // Assuming you have a DELETE endpoint at /api/materials/[id]
       const response = await fetch(`/api/materials/${materialId}`, { method: "DELETE" })
       if (response.ok) {
         toast({ title: "Material deleted" })
         fetchMaterials(selectedCourse)
+      } else {
+        toast({ title: "Failed to delete material", variant: "destructive" })
       }
     } catch (error) {
       toast({ title: "Failed to delete material", variant: "destructive" })
@@ -186,9 +195,9 @@ export default function TeacherMaterialsPage() {
               <div className="space-y-2">
                 <Label>Upload File *</Label>
                 <FileUpload
-                  uploadType="material"
                   accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar"
-                  onUploadComplete={(data) => setUploadedFile(data)}
+                  // 💡 FIX: Correctly destructure and store the fileUrl and fileName
+                  onUploadComplete={(fileUrl, fileName) => setUploadedFile({ url: fileUrl, filename: fileName })}
                 />
               </div>
               <Button onClick={handleUpload} disabled={uploading || !uploadedFile} className="w-full">

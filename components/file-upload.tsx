@@ -6,9 +6,11 @@ import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Upload, X, FileText, ImageIcon, File, CheckCircle, Loader2 } from "lucide-react"
-import { toast } from "sonner"
+// Assuming you are using sonner for toasts, otherwise change to useToast from shadcn/ui
+import { toast } from "sonner" 
 
 interface FileUploadProps {
+  // 💡 Note: onUploadComplete now correctly passes two string arguments
   onUploadComplete: (fileUrl: string, fileName: string) => void
   accept?: string
   maxSize?: number // in MB
@@ -67,7 +69,8 @@ export function FileUpload({
         xhr.addEventListener("load", () => {
           if (xhr.status >= 200 && xhr.status < 300) {
             const data = JSON.parse(xhr.responseText)
-            resolve(data)
+            // Assuming the /api/upload endpoint returns { fileUrl: "...", fileName: "..." }
+            resolve(data) 
           } else {
             try {
               const error = JSON.parse(xhr.responseText)
@@ -86,14 +89,18 @@ export function FileUpload({
           reject(new Error("Upload cancelled"))
         })
 
-        xhr.open("POST", "/api/upload")
+        // 💡 Note: This is the URL that handles the actual file storage (e.g., S3 upload, local storage)
+        xhr.open("POST", "/api/upload") 
         xhr.send(formData)
       })
 
       const data = await uploadPromise
       setProgress(100)
       setUploadedFile({ name: file.name, url: data.fileUrl })
-      onUploadComplete(data.fileUrl, file.name)
+      
+      // 💡 This calls the handler in TeacherMaterialsPage with the URL and Name
+      onUploadComplete(data.fileUrl, file.name) 
+      
       toast.success("File uploaded successfully")
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to upload file")
@@ -106,11 +113,12 @@ export function FileUpload({
   const handleRemove = async () => {
     if (uploadedFile?.url) {
       try {
+        // Send a request to the backend to delete the stored file
         await fetch(`/api/upload?url=${encodeURIComponent(uploadedFile.url)}`, {
           method: "DELETE",
         })
       } catch (error) {
-        // Silently fail - file might already be deleted
+        // Silently fail - file might already be deleted or deletion API doesn't exist/matter
       }
     }
     setUploadedFile(null)

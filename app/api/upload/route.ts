@@ -1,9 +1,30 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getSession } from "@/lib/auth"
-import { getDatabase } from "@/lib/mongodb"
-import { randomUUID } from "crypto"
 import { writeFile, mkdir } from "fs/promises"
-import path from "path"
+import { join } from "path"
+import { getSession } from "@/lib/auth"
+
+// Configure upload directory
+const UPLOAD_DIR = join(process.cwd(), "public", "uploads")
+
+// Allowed file types
+const ALLOWED_TYPES = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "text/plain",
+  "application/zip",
+  "application/x-rar-compressed",
+]
+
+const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,67 +34,62 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = await request.formData()
-    const file = formData.get("file") as File
-    const type = formData.get("type") as string // 'material', 'submission', 'message'
+    const file = formData.get("file") as File | null
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 })
     }
 
-    // Validate file size (max 50MB)
-    if (file.size > 50 * 1024 * 1024) {
+    // Validate file type
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { error: "Invalid file type. Allowed: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, images, TXT, ZIP, RAR" },
+        { status: 400 },
+      )
+    }
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json({ error: "File too large. Maximum size is 50MB" }, { status: 400 })
     }
 
-    // Generate a unique filename
-    const ext = file.name.split(".").pop()
-    const uniqueId = randomUUID()
-    const uniqueFileName = `${uniqueId}.${ext}`
-    
-    // Determine upload directory based on type
-    const uploadDir = type === "material" ? "materials" : type === "submission" ? "submissions" : "general"
-    const userDir = session.userId as string
-    
-    // Create directory path
-    const dirPath = path.join(process.cwd(), "public", "uploads", uploadDir, userDir)
-    await mkdir(dirPath, { recursive: true })
-    
-    // Save file
-    const filePath = path.join(dirPath, uniqueFileName)
+    // Create upload directory if it doesn't exist
+    try {
+      await mkdir(UPLOAD_DIR, { recursive: true })
+    } catch (err) {
+      // Directory might already exist
+    }
+
+    // Generate unique filename
+    const timestamp = Date.now()
+    const randomStr = Math.random().toString(36).substring(2, 8)
+    const extension = file.name.split(".").pop() || "bin"
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_").substring(0, 50)
+    const filename = `${timestamp}-${randomStr}-${sanitizedName}`
+
+    // Convert file to buffer and save
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    await writeFile(filePath, buffer)
-    
-    // Create public URL
-    const fileUrl = `/uploads/${uploadDir}/${userDir}/${uniqueFileName}`
+    const filepath = join(UPLOAD_DIR, filename)
 
-    // Create upload token for tracking
-    const tokenId = randomUUID()
-    const db = await getDatabase()
-    const uploadsCollection = db.collection("uploads")
+    await writeFile(filepath, buffer)
 
-    await uploadsCollection.insertOne({
-      tokenId,
-      url: fileUrl,
-      filename: file.name,
-      size: file.size,
-      type: file.type,
-      uploadType: type || "general",
-      uploadedBy: session.userId,
-      claimed: false,
-      createdAt: new Date(),
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-    })
+    // Return the public URL
+    const fileUrl = `/uploads/${filename}`
 
     return NextResponse.json({
-      url: fileUrl,
-      tokenId,
-      filename: file.name,
-      size: file.size,
-      type: file.type,
+      message: "File uploaded successfully",
+      fileUrl,
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
     })
   } catch (error) {
-    console.error("[v0] Upload error:", error)
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 })
+    console.error("Upload error:", error)
+    return NextResponse.json({ error: "Failed to upload file" }, { status: 500 })
   }
+}
+
+export async function GET() {
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405 })
 }

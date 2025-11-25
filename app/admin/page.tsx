@@ -9,7 +9,6 @@ export default function AdminDashboard() {
         <p className="text-muted-foreground">System overview and management</p>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -18,9 +17,9 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">1,234</div>
+            <p className="text-xs text-muted-foreground">+12% from last month</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Teachers</CardTitle>
@@ -31,7 +30,6 @@ export default function AdminDashboard() {
             <p className="text-xs text-muted-foreground">+3 new this month</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
@@ -42,7 +40,6 @@ export default function AdminDashboard() {
             <p className="text-xs text-muted-foreground">Active courses</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Assignments</CardTitle>
@@ -55,7 +52,6 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Recent Activity */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
@@ -79,7 +75,6 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>System Activity</CardTitle>

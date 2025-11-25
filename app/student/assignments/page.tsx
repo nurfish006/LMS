@@ -69,7 +69,7 @@ export default function StudentAssignmentsPage() {
         setSubmissions(data.submissions)
       }
     } catch (error) {
-      console.error("[v0] Fetch submissions error:", error)
+      console.error("Fetch submissions error:", error)
     }
   }
 
@@ -147,7 +147,7 @@ export default function StudentAssignmentsPage() {
           return (
             <Card key={assignment._id}>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between">
                   <div>
                     <CardTitle>{assignment.title}</CardTitle>
                     <CardDescription>{assignment.description}</CardDescription>
@@ -159,28 +159,19 @@ export default function StudentAssignmentsPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-4 mb-4">
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">Due Date:</span>{" "}
-                    {new Date(assignment.dueDate).toLocaleDateString()}
-                  </div>
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">Points:</span> {assignment.totalPoints}
-                  </div>
+                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
+                  <span>Due Date: {new Date(assignment.dueDate).toLocaleDateString()}</span>
+                  <span>Points: {assignment.totalPoints}</span>
                   {submission?.grade !== undefined && (
-                    <div className="text-sm">
-                      <span className="text-muted-foreground">Grade:</span> {submission.grade}/{assignment.totalPoints}
-                    </div>
+                    <span className="text-success">
+                      Grade: {submission.grade}/{assignment.totalPoints}
+                    </span>
                   )}
-                  {submission?.feedback && (
-                    <div className="text-sm">
-                      <span className="text-muted-foreground">Feedback:</span> {submission.feedback}
-                    </div>
-                  )}
+                  {submission?.feedback && <span>Feedback: {submission.feedback}</span>}
                 </div>
                 <div className="flex gap-2">
                   {assignment.fileUrl && (
-                    <Button asChild variant="outline" size="sm">
+                    <Button size="sm" variant="outline" asChild>
                       <a href={assignment.fileUrl} target="_blank" rel="noopener noreferrer">
                         Download
                       </a>
@@ -201,8 +192,9 @@ export default function StudentAssignmentsPage() {
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                           <div className="space-y-2">
-                            <Label>File URL</Label>
+                            <Label htmlFor="fileUrl">File URL</Label>
                             <Input
+                              id="fileUrl"
                               placeholder="https://drive.google.com/..."
                               value={selectedFileUrl}
                               onChange={(e) => setSelectedFileUrl(e.target.value)}

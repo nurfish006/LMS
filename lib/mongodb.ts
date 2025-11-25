@@ -9,7 +9,7 @@ declare global {
 
 function getClientPromise(): Promise<MongoClient> {
   if (!process.env.MONGODB_URI) {
-    throw new Error("Please add your MongoDB URI to .env.local")
+    throw new Error("Please add your MongoDB URI to environment variables")
   }
 
   if (clientPromise) {
@@ -18,9 +18,6 @@ function getClientPromise(): Promise<MongoClient> {
 
   const uri = process.env.MONGODB_URI
   const options = {
-    tls: true,
-    tlsAllowInvalidCertificates: false,
-    tlsAllowInvalidHostnames: false,
     serverSelectionTimeoutMS: 5000,
     connectTimeoutMS: 10000,
     socketTimeoutMS: 45000,

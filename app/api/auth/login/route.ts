@@ -13,25 +13,26 @@ export async function POST(request: NextRequest) {
     }
 
     if (!process.env.MONGODB_URI) {
-      return NextResponse.json({ error: "Database configuration error" }, { status: 500 })
+      return NextResponse.json(
+        { error: "Database configuration error. Please add MONGODB_URI to environment variables." },
+        { status: 500 },
+      )
     }
 
     if (!process.env.JWT_SECRET) {
-      return NextResponse.json({ error: "Authentication configuration error" }, { status: 500 })
+      return NextResponse.json(
+        { error: "Authentication configuration error. Please add JWT_SECRET to environment variables." },
+        { status: 500 },
+      )
     }
 
     const db = await getDatabase()
     const usersCollection = db.collection<User>("users")
-
     const user = await usersCollection.findOne({ email })
-    if (!user) {
-      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
-    }
+    if (!user) return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
 
     const isValid = await verifyPassword(password, user.password)
-    if (!isValid) {
-      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
-    }
+    if (!isValid) return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
 
     const token = await createToken({
       userId: user._id,
@@ -56,7 +57,6 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error: any) {
-    console.error("[v0] Login error:", error.message)
     return NextResponse.json({ error: `Login failed: ${error.message}` }, { status: 500 })
   }
 }

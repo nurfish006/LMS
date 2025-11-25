@@ -11,7 +11,6 @@ export default function TeacherDashboard() {
         <p className="text-muted-foreground">Manage your courses, assignments, and student progress.</p>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -23,7 +22,6 @@ export default function TeacherDashboard() {
             <p className="text-xs text-muted-foreground">Active this semester</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Students</CardTitle>
@@ -34,7 +32,6 @@ export default function TeacherDashboard() {
             <p className="text-xs text-muted-foreground">Across all courses</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Assignments</CardTitle>
@@ -45,7 +42,6 @@ export default function TeacherDashboard() {
             <p className="text-xs text-muted-foreground">Active assignments</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">To Grade</CardTitle>
@@ -58,7 +54,6 @@ export default function TeacherDashboard() {
         </Card>
       </div>
 
-      {/* Quick Actions */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
@@ -66,53 +61,35 @@ export default function TeacherDashboard() {
             <CardDescription>Latest assignment submissions requiring grading</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Database Systems - Assignment 3</p>
                 <p className="text-sm text-muted-foreground">5 new submissions</p>
               </div>
-              <Link href="/teacher/assignments">
-                <Button size="sm">Grade</Button>
-              </Link>
-            </div>
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div>
-                <p className="font-medium">Web Development - Project Proposal</p>
-                <p className="text-sm text-muted-foreground">8 new submissions</p>
-              </div>
-              <Link href="/teacher/assignments">
-                <Button size="sm">Grade</Button>
-              </Link>
+              <Button size="sm" variant="outline" asChild>
+                <Link href="/teacher/assignments">Grade</Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
             <CardDescription>Common tasks and shortcuts</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-2">
-            <Link href="/teacher/courses">
-              <Button variant="outline" className="w-full bg-transparent">
-                Create New Course
-              </Button>
-            </Link>
-            <Link href="/teacher/assignments">
-              <Button variant="outline" className="w-full bg-transparent">
-                Create Assignment
-              </Button>
-            </Link>
-            <Link href="/teacher/materials">
-              <Button variant="outline" className="w-full bg-transparent">
-                Upload Material
-              </Button>
-            </Link>
-            <Link href="/teacher/messages">
-              <Button variant="outline" className="w-full bg-transparent">
-                Message Students
-              </Button>
-            </Link>
+            <Button variant="outline" asChild>
+              <Link href="/teacher/courses">Create New Course</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/teacher/assignments">Create Assignment</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/teacher/materials">Upload Material</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/teacher/messages">Message Students</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>

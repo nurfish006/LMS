@@ -5,7 +5,6 @@ import { ObjectId } from "mongodb"
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = await params
     const session = await getSession()
     if (!session || session.role !== "teacher") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -18,6 +17,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ error: "Grade is required" }, { status: 400 })
     }
 
+    const { id } = await params
     const db = await getDatabase()
     const submissionsCollection = db.collection("submissions")
 
@@ -39,7 +39,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     return NextResponse.json({ message: "Grade submitted successfully" })
   } catch (error) {
-    console.error("[v0] Grade submission error:", error)
+    console.error("Grade submission error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

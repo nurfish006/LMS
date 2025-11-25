@@ -6,13 +6,9 @@ import type { Course } from "@/lib/models"
 export async function GET(request: NextRequest) {
   try {
     const session = await getSession()
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const db = await getDatabase()
-    const coursesCollection = db.collection<Course>("courses")
-
     const { searchParams } = new URL(request.url)
     const teacherId = searchParams.get("teacherId")
     const department = searchParams.get("department")
@@ -21,11 +17,9 @@ export async function GET(request: NextRequest) {
     if (teacherId) query.teacherId = teacherId
     if (department) query.department = department
 
-    const courses = await coursesCollection.find(query).toArray()
-
+    const courses = await db.collection<Course>("courses").find(query).toArray()
     return NextResponse.json({ courses })
   } catch (error) {
-    console.error("[v0] Get courses error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
@@ -45,8 +39,6 @@ export async function POST(request: NextRequest) {
     }
 
     const db = await getDatabase()
-    const coursesCollection = db.collection<Course>("courses")
-
     const newCourse: Course = {
       title,
       code,
@@ -59,11 +51,9 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date(),
     }
 
-    const result = await coursesCollection.insertOne(newCourse)
-
+    const result = await db.collection<Course>("courses").insertOne(newCourse)
     return NextResponse.json({ message: "Course created successfully", courseId: result.insertedId }, { status: 201 })
   } catch (error) {
-    console.error("[v0] Create course error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

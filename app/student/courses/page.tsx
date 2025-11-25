@@ -95,10 +95,10 @@ export default function StudentCoursesPage() {
   if (loading) {
     return (
       <div className="space-y-8">
-        <div className="h-8 w-48 bg-muted animate-pulse rounded" />
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="animate-pulse">
+          <div className="h-8 w-48 bg-muted rounded mb-4" />
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
+            <div key={i} className="h-24 bg-muted rounded mb-4" />
           ))}
         </div>
       </div>
@@ -112,21 +112,22 @@ export default function StudentCoursesPage() {
         <p className="text-muted-foreground">Access course materials and resources</p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid gap-6 md:grid-cols-3">
         {/* Course List */}
         <div className="space-y-2">
-          <h3 className="font-semibold mb-4">Enrolled Courses</h3>
+          <h2 className="font-semibold mb-4">Enrolled Courses</h2>
           {courses.map((course) => (
-            <button
+            <Button
               key={course._id}
+              variant={selectedCourse === course._id ? "secondary" : "ghost"}
+              className="w-full justify-start"
               onClick={() => setSelectedCourse(course._id)}
-              className={`w-full text-left p-4 rounded-lg border transition-colors ${
-                selectedCourse === course._id ? "bg-primary text-primary-foreground" : "hover:bg-muted"
-              }`}
             >
-              <div className="font-medium">{course.code}</div>
-              <div className="text-sm opacity-80">{course.title}</div>
-            </button>
+              <div className="text-left">
+                <p className="font-medium">{course.code}</p>
+                <p className="text-xs text-muted-foreground">{course.title}</p>
+              </div>
+            </Button>
           ))}
         </div>
 
@@ -142,10 +143,10 @@ export default function StudentCoursesPage() {
                 {materials.length === 0 ? (
                   <p className="text-muted-foreground text-center py-8">No materials available yet</p>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {materials.map((material) => (
                       <div key={material._id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-4">
                           {getFileIcon(material.fileType)}
                           <div>
                             <p className="font-medium">{material.title}</p>
@@ -155,7 +156,7 @@ export default function StudentCoursesPage() {
                             </p>
                           </div>
                         </div>
-                        <Button asChild size="sm" variant="outline">
+                        <Button size="sm" variant="outline" asChild>
                           <a href={getDownloadUrl(material)} target="_blank" rel="noopener noreferrer">
                             <Download className="h-4 w-4 mr-2" />
                             Download

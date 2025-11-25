@@ -5,12 +5,12 @@ import { ObjectId } from "mongodb"
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = await params
     const session = await getSession()
     if (!session || (session.role !== "admin" && session.role !== "head")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const { id } = await params
     const db = await getDatabase()
     const newsCollection = db.collection("news")
 
@@ -22,7 +22,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     return NextResponse.json({ message: "News deleted successfully" })
   } catch (error) {
-    console.error("[v0] Delete news error:", error)
+    console.error("Delete news error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

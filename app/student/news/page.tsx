@@ -26,7 +26,7 @@ export default function StudentNewsPage() {
         setNews(data.news)
       }
     } catch (error) {
-      console.error("[v0] Fetch news error:", error)
+      console.error("Fetch news error:", error)
     }
   }
 
@@ -42,8 +42,8 @@ export default function StudentNewsPage() {
           <Card key={item._id}>
             <CardHeader>
               <div className="flex items-start gap-4">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Newspaper className="h-6 w-6 text-primary" />
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Newspaper className="h-5 w-5 text-primary" />
                 </div>
                 <div>
                   <CardTitle>{item.title}</CardTitle>

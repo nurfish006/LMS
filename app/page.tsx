@@ -5,102 +5,91 @@ import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+    <main className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <GraduationCap className="h-8 w-8 text-primary" />
             <span className="font-bold text-xl">Woldia University ELS</span>
           </div>
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            <Link href="/login">
-              <Button variant="outline">Login</Button>
-            </Link>
-            <Link href="/register">
-              <Button>Get Started</Button>
-            </Link>
+            <Button variant="ghost" asChild>
+              <Link href="/login">Login</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/register">Get Started</Link>
+            </Button>
           </div>
-        </div>
+        </nav>
       </header>
 
-      <div className="container mx-auto px-4">
-        {/* Hero Content */}
-        <section className="py-20 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">Welcome to Woldia University E-Learning System</h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+      <section className="container mx-auto px-4 py-24">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-balance">
+            Welcome to Woldia University E-Learning System
+          </h1>
+          <p className="text-lg text-muted-foreground mb-8 text-pretty">
             A comprehensive online learning platform designed to enhance education through digital innovation. Access
             courses, submit assignments, and communicate with instructors anytime, anywhere.
           </p>
           <div className="flex gap-4 justify-center">
-            <Link href="/register">
-              <Button size="lg" className="gap-2">
-                <GraduationCap className="h-5 w-5" />
-                Start Learning
-              </Button>
-            </Link>
-            <Link href="/about">
-              <Button size="lg" variant="outline">
-                Learn More
-              </Button>
-            </Link>
+            <Button size="lg" asChild>
+              <Link href="/register">Start Learning</Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link href="/about">Learn More</Link>
+            </Button>
           </div>
-        </section>
+        </div>
 
-        {/* Features Grid */}
-        <section className="py-16 grid md:grid-cols-3 gap-8">
-          <div className="p-6 rounded-lg border bg-card">
+        <div className="grid md:grid-cols-3 gap-8 mb-16">
+          <div className="bg-card rounded-lg p-6 border shadow-sm">
             <BookOpen className="h-12 w-12 text-primary mb-4" />
             <h3 className="text-xl font-semibold mb-2">Course Materials</h3>
             <p className="text-muted-foreground">
-              Access comprehensive course materials, lecture notes, and resources uploaded by your instructors in one
-              centralized location.
+              Access comprehensive course materials, lecture notes, and resources uploaded by your instructors.
             </p>
           </div>
-
-          <div className="p-6 rounded-lg border bg-card">
+          <div className="bg-card rounded-lg p-6 border shadow-sm">
             <Users className="h-12 w-12 text-primary mb-4" />
             <h3 className="text-xl font-semibold mb-2">Interactive Learning</h3>
             <p className="text-muted-foreground">
-              Engage with instructors and classmates through real-time messaging and collaborative discussion forums.
+              Engage with instructors and classmates through real-time messaging and collaborative forums.
             </p>
           </div>
-
-          <div className="p-6 rounded-lg border bg-card">
+          <div className="bg-card rounded-lg p-6 border shadow-sm">
             <Shield className="h-12 w-12 text-primary mb-4" />
             <h3 className="text-xl font-semibold mb-2">Assignment Management</h3>
             <p className="text-muted-foreground">
               Submit assignments online, track deadlines, and receive feedback from instructors efficiently.
             </p>
           </div>
-        </section>
+        </div>
 
-        {/* Stats Section */}
-        <section className="py-16 bg-muted/50 rounded-lg mb-16">
+        <div className="bg-primary text-primary-foreground rounded-2xl p-8 md:p-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
-              <div className="text-4xl font-bold text-primary">1000+</div>
-              <div className="text-muted-foreground">Active Students</div>
+              <div className="text-3xl md:text-4xl font-bold">1000+</div>
+              <div className="text-sm opacity-90">Active Students</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-primary">100+</div>
-              <div className="text-muted-foreground">Faculty Members</div>
+              <div className="text-3xl md:text-4xl font-bold">100+</div>
+              <div className="text-sm opacity-90">Faculty Members</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-primary">50+</div>
-              <div className="text-muted-foreground">Courses Available</div>
+              <div className="text-3xl md:text-4xl font-bold">50+</div>
+              <div className="text-sm opacity-90">Courses Available</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-primary">24/7</div>
-              <div className="text-muted-foreground">Platform Access</div>
+              <div className="text-3xl md:text-4xl font-bold">24/7</div>
+              <div className="text-sm opacity-90">Platform Access</div>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
-      {/* Footer */}
-      <footer className="border-t py-8 bg-card">
+      <footer className="border-t py-8 mt-auto">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
           &copy; 2023 Woldia University. All rights reserved.
         </div>

@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ users })
   } catch (error) {
-    console.error("[v0] Get users error:", error)
+    console.error("Get users error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ message: "User created successfully", userId: result.insertedId }, { status: 201 })
   } catch (error) {
-    console.error("[v0] Create user error:", error)
+    console.error("Create user error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

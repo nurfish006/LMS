@@ -25,30 +25,25 @@ export default function LoginPage() {
 
     try {
       await login(email, password)
-      toast({
-        title: "Success",
-        description: "Logged in successfully",
-      })
+      toast({ title: "Success", description: "Logged in successfully" })
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Invalid email or password",
-        variant: "destructive",
-      })
+      toast({ title: "Error", description: error.message || "Invalid email or password", variant: "destructive" })
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted/20 p-4">
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <GraduationCap className="h-12 w-12 text-primary" />
+            <Link href="/">
+              <GraduationCap className="h-10 w-10 text-primary" />
+            </Link>
           </div>
           <CardTitle className="text-2xl">Welcome Back</CardTitle>
           <CardDescription>Login to access your Woldia University E-Learning account</CardDescription>
@@ -60,7 +55,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="your.email@woldia.edu.et"
+                placeholder="student@woldia.edu.et"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -71,7 +66,7 @@ export default function LoginPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -89,6 +84,6 @@ export default function LoginPage() {
           </p>
         </CardContent>
       </Card>
-    </div>
+    </main>
   )
 }

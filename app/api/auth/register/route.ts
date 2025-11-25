@@ -19,20 +19,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!process.env.JWT_SECRET) {
-      return NextResponse.json(
-        { error: "Authentication configuration error. Please add JWT_SECRET to environment variables." },
-        { status: 500 },
-      )
-    }
-
     const db = await getDatabase()
     const usersCollection = db.collection<User>("users")
 
     const existingUser = await usersCollection.findOne({ email })
-    if (existingUser) {
-      return NextResponse.json({ error: "User already exists" }, { status: 400 })
-    }
+    if (existingUser) return NextResponse.json({ error: "User already exists" }, { status: 400 })
 
     const hashedPassword = await hashPassword(password)
 
@@ -50,10 +41,8 @@ export async function POST(request: NextRequest) {
     }
 
     await usersCollection.insertOne(newUser)
-
     return NextResponse.json({ message: "User registered successfully" }, { status: 201 })
   } catch (error: any) {
-    console.error("[v0] Registration error:", error.message)
     return NextResponse.json({ error: `Registration failed: ${error.message}` }, { status: 500 })
   }
 }

@@ -11,7 +11,6 @@ export default function StudentDashboard() {
         <p className="text-muted-foreground">Welcome back! Here's your learning overview.</p>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -23,7 +22,6 @@ export default function StudentDashboard() {
             <p className="text-xs text-muted-foreground">Active this semester</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending Assignments</CardTitle>
@@ -34,7 +32,6 @@ export default function StudentDashboard() {
             <p className="text-xs text-muted-foreground">Due this week</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Completed</CardTitle>
@@ -45,7 +42,6 @@ export default function StudentDashboard() {
             <p className="text-xs text-muted-foreground">Assignments submitted</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Study Hours</CardTitle>
@@ -58,7 +54,6 @@ export default function StudentDashboard() {
         </Card>
       </div>
 
-      {/* Quick Actions */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
@@ -66,54 +61,49 @@ export default function StudentDashboard() {
             <CardDescription>Assignments due in the next 7 days</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Database Systems - Assignment 3</p>
                 <p className="text-sm text-muted-foreground">Due in 2 days</p>
               </div>
-              <Link href="/student/assignments">
-                <Button size="sm">View</Button>
-              </Link>
+              <Button size="sm" variant="outline" asChild>
+                <Link href="/student/assignments">View</Link>
+              </Button>
             </div>
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Web Development - Project Proposal</p>
                 <p className="text-sm text-muted-foreground">Due in 4 days</p>
               </div>
-              <Link href="/student/assignments">
-                <Button size="sm">View</Button>
-              </Link>
+              <Button size="sm" variant="outline" asChild>
+                <Link href="/student/assignments">View</Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Recent Course Materials</CardTitle>
             <CardDescription>Latest materials uploaded by instructors</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Data Structures - Lecture 10</p>
                 <p className="text-sm text-muted-foreground">Added 1 day ago</p>
               </div>
-              <Link href="/student/courses">
-                <Button size="sm" variant="outline">
-                  Download
-                </Button>
-              </Link>
+              <Button size="sm" variant="outline" asChild>
+                <Link href="/student/courses">Download</Link>
+              </Button>
             </div>
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Algorithms - Practice Problems</p>
                 <p className="text-sm text-muted-foreground">Added 2 days ago</p>
               </div>
-              <Link href="/student/courses">
-                <Button size="sm" variant="outline">
-                  Download
-                </Button>
-              </Link>
+              <Button size="sm" variant="outline" asChild>
+                <Link href="/student/courses">Download</Link>
+              </Button>
             </div>
           </CardContent>
         </Card>

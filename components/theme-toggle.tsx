@@ -14,19 +14,13 @@ export function ThemeToggle() {
   }, [])
 
   if (!mounted) {
-    return <Button variant="ghost" size="sm" className="gap-2" />
+    return <Button variant="outline" size="sm" className="gap-2 w-20 bg-transparent" />
   }
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="gap-2"
-      title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-    >
+    <Button variant="outline" size="sm" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="gap-2">
       {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-      <span className="hidden md:inline">{theme === "dark" ? "Light" : "Dark"}</span>
+      <span className="hidden sm:inline">{theme === "dark" ? "Light" : "Dark"}</span>
     </Button>
   )
 }

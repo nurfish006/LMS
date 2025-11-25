@@ -41,7 +41,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null)
       }
     } catch (error) {
-      console.error("[v0] Fetch user error:", error)
       setUser(null)
     } finally {
       setLoading(false)
@@ -67,7 +66,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const data = await response.json()
     setUser(data.user)
 
-    // Redirect based on role
     switch (data.user.role) {
       case "student":
         router.push("/student")

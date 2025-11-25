@@ -65,16 +65,10 @@ export interface Message {
   senderId: string
   senderName: string
   senderRole: string
-  receiverId: string
-  receiverName: string
+  receiverId?: string // Optional: for direct messages
+  receiverName?: string
   content: string
-  attachment?: {
-    url: string
-    filename: string
-    type: string
-    size: number
-  }
-  read: boolean
+  isGroupMessage: boolean
   createdAt: Date
 }
 
@@ -86,17 +80,11 @@ export interface News {
   createdAt: Date
 }
 
-export interface UploadAsset {
-  _id?: string
-  tokenId: string
-  uploadedBy: string
-  originalName: string
-  storagePath: string
-  mimeType: string
-  size: number
-  type: "material" | "assignment" | "submission"
-  linkedTo?: string
-  claimed: boolean
-  createdAt: Date
-  expiresAt: Date
+export interface Conversation {
+  oderId: string
+  odeName: string
+  otherRole: string
+  lastMessage?: string
+  lastMessageAt?: Date
+  unreadCount?: number
 }

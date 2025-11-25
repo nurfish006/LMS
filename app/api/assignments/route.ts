@@ -20,10 +20,9 @@ export async function GET(request: NextRequest) {
     if (courseId) query.courseId = courseId
 
     const assignments = await assignmentsCollection.find(query).sort({ dueDate: 1 }).toArray()
-
     return NextResponse.json({ assignments })
   } catch (error) {
-    console.error("[v0] Get assignments error:", error)
+    console.error("Get assignments error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
@@ -63,7 +62,7 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     )
   } catch (error) {
-    console.error("[v0] Create assignment error:", error)
+    console.error("Create assignment error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

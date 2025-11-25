@@ -28,9 +28,7 @@ export async function verifyToken(token: string) {
 export async function getSession() {
   const cookieStore = await cookies()
   const token = cookieStore.get("token")
-
   if (!token) return null
-
   return verifyToken(token.value)
 }
 

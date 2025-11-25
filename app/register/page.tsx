@@ -30,18 +30,11 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
     if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive",
-      })
+      toast({ title: "Error", description: "Passwords do not match", variant: "destructive" })
       return
     }
-
     setLoading(true)
-
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
@@ -57,36 +50,25 @@ export default function RegisterPage() {
           semester: formData.semester ? Number.parseInt(formData.semester) : undefined,
         }),
       })
-
       const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Registration failed")
-      }
-
-      toast({
-        title: "Success",
-        description: "Account created successfully. Please login.",
-      })
+      if (!response.ok) throw new Error(data.error || "Registration failed")
+      toast({ title: "Success", description: "Account created successfully. Please login." })
       router.push("/login")
     } catch (error: any) {
-      console.error("Registration error:", error)
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred",
-        variant: "destructive",
-      })
+      toast({ title: "Error", description: error.message, variant: "destructive" })
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted/20 p-4">
       <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <GraduationCap className="h-12 w-12 text-primary" />
+            <Link href="/">
+              <GraduationCap className="h-10 w-10 text-primary" />
+            </Link>
           </div>
           <CardTitle className="text-2xl">Create Account</CardTitle>
           <CardDescription>Register for Woldia University E-Learning System</CardDescription>
@@ -98,7 +80,6 @@ export default function RegisterPage() {
                 <Label htmlFor="firstName">First Name</Label>
                 <Input
                   id="firstName"
-                  placeholder="John"
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                   required
@@ -108,31 +89,28 @@ export default function RegisterPage() {
                 <Label htmlFor="lastName">Last Name</Label>
                 <Input
                   id="lastName"
-                  placeholder="Doe"
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                   required
                 />
               </div>
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="your.email@woldia.edu.et"
+                placeholder="student@woldia.edu.et"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
               <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select your role" />
+                  <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="student">Student</SelectItem>
@@ -140,21 +118,20 @@ export default function RegisterPage() {
                 </SelectContent>
               </Select>
             </div>
-
             {formData.role === "student" && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="department">Department</Label>
                   <Input
                     id="department"
-                    placeholder="Computer Science"
+                    placeholder="e.g., Computer Science"
                     value={formData.department}
                     onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="year">Year</Label>
+                    <Label>Year</Label>
                     <Select value={formData.year} onValueChange={(value) => setFormData({ ...formData, year: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select year" />
@@ -168,7 +145,7 @@ export default function RegisterPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="semester">Semester</Label>
+                    <Label>Semester</Label>
                     <Select
                       value={formData.semester}
                       onValueChange={(value) => setFormData({ ...formData, semester: value })}
@@ -185,26 +162,23 @@ export default function RegisterPage() {
                 </div>
               </>
             )}
-
             {formData.role === "teacher" && (
               <div className="space-y-2">
                 <Label htmlFor="department">Department</Label>
                 <Input
                   id="department"
-                  placeholder="Computer Science"
+                  placeholder="e.g., Computer Science"
                   value={formData.department}
                   onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                 />
               </div>
             )}
-
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Create password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   required
@@ -215,14 +189,12 @@ export default function RegisterPage() {
                 <Input
                   id="confirmPassword"
                   type="password"
-                  placeholder="Confirm password"
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                   required
                 />
               </div>
             </div>
-
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Creating Account..." : "Create Account"}
             </Button>
@@ -235,6 +207,6 @@ export default function RegisterPage() {
           </p>
         </CardContent>
       </Card>
-    </div>
+    </main>
   )
 }

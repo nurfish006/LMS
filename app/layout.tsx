@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { AuthProvider } from "@/components/auth-provider"
 import { Toaster } from "@/components/ui/toaster"
+import { Toaster as SonnerToaster } from "sonner"
 import { ThemeProvider } from "next-themes"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -45,6 +46,7 @@ export default function RootLayout({
           <AuthProvider>
             {children}
             <Toaster />
+            <SonnerToaster position="top-right" />
           </AuthProvider>
         </ThemeProvider>
         <Analytics />

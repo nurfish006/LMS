@@ -2,15 +2,14 @@
 
 import type React from "react"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { Upload, X, CheckCircle2, AlertCircle } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Upload, X, FileText, ImageIcon, File, CheckCircle } from "lucide-react"
+import { toast } from "sonner"
 
 interface FileUploadProps {
-  onUploadComplete: (data: { url: string; tokenId: string; filename: string; size: number; type: string }) => void
-  uploadType?: "material" | "submission" | "message" | "general"
+  onUploadComplete: (fileUrl: string, fileName: string) => void
   accept?: string
   maxSize?: number // in MB
   className?: string
@@ -18,47 +17,47 @@ interface FileUploadProps {
 
 export function FileUpload({
   onUploadComplete,
-  uploadType = "general",
-  accept,
+  accept = ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.webp,.txt,.zip,.rar",
   maxSize = 50,
-  className,
+  className = "",
 }: FileUploadProps) {
-  const [isDragging, setIsDragging] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
-  const [error, setError] = useState<string | null>(null)
-  const [uploadedFile, setUploadedFile] = useState<{ filename: string; size: number } | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploadedFile, setUploadedFile] = useState<{ name: string; url: string } | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(true)
-  }, [])
+  const getFileIcon = (fileName: string) => {
+    const ext = fileName.split(".").pop()?.toLowerCase()
+    if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext || "")) {
+      return <ImageIcon className="h-5 w-5" />
+    }
+    if (["pdf", "doc", "docx", "txt"].includes(ext || "")) {
+      return <FileText className="h-5 w-5" />
+    }
+    return <File className="h-5 w-5" />
+  }
 
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
-  }, [])
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
 
-  const uploadFile = async (file: File) => {
+    // Validate file size
     if (file.size > maxSize * 1024 * 1024) {
-      setError(`File too large. Maximum size is ${maxSize}MB`)
+      toast.error(`File too large. Maximum size is ${maxSize}MB`)
       return
     }
 
-    setUploading(true)
-    setError(null)
-    setProgress(0)
-
-    const formData = new FormData()
-    formData.append("file", file)
-    formData.append("type", uploadType)
-
     try {
-      // Simulate progress for better UX
+      setUploading(true)
+      setProgress(10)
+
+      const formData = new FormData()
+      formData.append("file", file)
+
+      // Simulate progress
       const progressInterval = setInterval(() => {
         setProgress((prev) => Math.min(prev + 10, 90))
-      }, 100)
+      }, 200)
 
       const response = await fetch("/api/upload", {
         method: "POST",
@@ -66,129 +65,71 @@ export function FileUpload({
       })
 
       clearInterval(progressInterval)
-      setProgress(100)
 
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || "Upload failed")
+        const error = await response.json()
+        throw new Error(error.error || "Upload failed")
       }
 
       const data = await response.json()
-      setUploadedFile({ filename: data.filename, size: data.size })
-      onUploadComplete(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Upload failed")
+      setProgress(100)
+      setUploadedFile({ name: file.name, url: data.fileUrl })
+      onUploadComplete(data.fileUrl, file.name)
+      toast.success("File uploaded successfully")
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to upload file")
     } finally {
       setUploading(false)
+      setTimeout(() => setProgress(0), 1000)
     }
   }
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault()
-      setIsDragging(false)
-
-      const file = e.dataTransfer.files[0]
-      if (file) {
-        uploadFile(file)
-      }
-    },
-    [uploadType, maxSize],
-  )
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      uploadFile(file)
-    }
-  }
-
-  const reset = () => {
+  const handleRemove = () => {
     setUploadedFile(null)
-    setError(null)
-    setProgress(0)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
+    if (inputRef.current) {
+      inputRef.current.value = ""
     }
-  }
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return bytes + " B"
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB"
-    return (bytes / (1024 * 1024)).toFixed(1) + " MB"
-  }
-
-  if (uploadedFile) {
-    return (
-      <div
-        className={cn(
-          "border rounded-lg p-4 bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800",
-          className,
-        )}
-      >
-        <div className="flex items-center gap-3">
-          <CheckCircle2 className="h-5 w-5 text-green-600" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-green-800 dark:text-green-200 truncate">{uploadedFile.filename}</p>
-            <p className="text-xs text-green-600 dark:text-green-400">
-              {formatFileSize(uploadedFile.size)} • Uploaded successfully
-            </p>
-          </div>
-          <Button variant="ghost" size="sm" onClick={reset}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    )
   }
 
   return (
-    <div className={cn("space-y-2", className)}>
-      <div
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
-        className={cn(
-          "border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors",
-          isDragging
-            ? "border-primary bg-primary/5"
-            : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50",
-          uploading && "pointer-events-none opacity-60",
-        )}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept={accept}
-          onChange={handleFileSelect}
-          className="hidden"
-          disabled={uploading}
-        />
+    <div className={`space-y-3 ${className}`}>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={accept}
+        onChange={handleFileSelect}
+        className="hidden"
+        disabled={uploading}
+      />
 
-        {uploading ? (
-          <div className="space-y-3">
-            <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" />
-            </div>
-            <Progress value={progress} className="h-2" />
-            <p className="text-sm text-muted-foreground">Uploading... {progress}%</p>
+      {uploadedFile ? (
+        <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/50">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            {getFileIcon(uploadedFile.name)}
+            <span className="truncate text-sm font-medium">{uploadedFile.name}</span>
+            <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
           </div>
-        ) : (
-          <>
-            <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-sm font-medium">Drop your file here or click to browse</p>
-            <p className="text-xs text-muted-foreground mt-1">Maximum file size: {maxSize}MB</p>
-          </>
-        )}
-      </div>
-
-      {error && (
-        <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
-          <AlertCircle className="h-4 w-4" />
-          {error}
+          <Button variant="ghost" size="icon" onClick={handleRemove} className="h-8 w-8">
+            <X className="h-4 w-4" />
+          </Button>
         </div>
+      ) : (
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          className="w-full h-24 border-dashed"
+        >
+          <div className="flex flex-col items-center gap-2">
+            <Upload className="h-6 w-6" />
+            <span>{uploading ? "Uploading..." : "Click to upload file"}</span>
+            <span className="text-xs text-muted-foreground">Max {maxSize}MB</span>
+          </div>
+        </Button>
       )}
+
+      {uploading && progress > 0 && <Progress value={progress} className="h-2" />}
     </div>
   )
 }

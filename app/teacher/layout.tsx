@@ -19,14 +19,12 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
     )
   }
 
-  if (!user || user.role !== "teacher") {
-    return null
-  }
+  if (!user || user.role !== "teacher") return null
 
   return (
     <div className="min-h-screen bg-background">

@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       if (uploadAsset.uploadedBy !== session.userId) {
         return NextResponse.json({ error: "Unauthorized to use this upload" }, { status: 403 })
       }
-      if (uploadAsset.type !== "submission") {
+      if (uploadAsset.uploadType !== "submission") {
         return NextResponse.json({ error: "Invalid upload type for submission" }, { status: 400 })
       }
       if (new Date() > new Date(uploadAsset.expiresAt)) {

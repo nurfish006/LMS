@@ -10,9 +10,6 @@ const nextConfig = {
     buildActivity: true,
     appIsrStatus: false,
   },
-  experimental: {
-    allowedOrigins: ['*'],
-  },
 }
 
 export default nextConfig

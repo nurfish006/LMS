@@ -1,8 +1,9 @@
-import { put } from "@vercel/blob"
 import { type NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
 import { getDatabase } from "@/lib/mongodb"
 import { randomUUID } from "crypto"
+import { writeFile, mkdir } from "fs/promises"
+import path from "path"
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,12 +27,25 @@ export async function POST(request: NextRequest) {
 
     // Generate a unique filename
     const ext = file.name.split(".").pop()
-    const uniqueName = `${type || "file"}/${session.userId}/${randomUUID()}.${ext}`
-
-    // Upload to Vercel Blob
-    const blob = await put(uniqueName, file, {
-      access: "public",
-    })
+    const uniqueId = randomUUID()
+    const uniqueFileName = `${uniqueId}.${ext}`
+    
+    // Determine upload directory based on type
+    const uploadDir = type === "material" ? "materials" : type === "submission" ? "submissions" : "general"
+    const userDir = session.userId as string
+    
+    // Create directory path
+    const dirPath = path.join(process.cwd(), "public", "uploads", uploadDir, userDir)
+    await mkdir(dirPath, { recursive: true })
+    
+    // Save file
+    const filePath = path.join(dirPath, uniqueFileName)
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    await writeFile(filePath, buffer)
+    
+    // Create public URL
+    const fileUrl = `/uploads/${uploadDir}/${userDir}/${uniqueFileName}`
 
     // Create upload token for tracking
     const tokenId = randomUUID()
@@ -40,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     await uploadsCollection.insertOne({
       tokenId,
-      url: blob.url,
+      url: fileUrl,
       filename: file.name,
       size: file.size,
       type: file.type,
@@ -52,7 +66,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({
-      url: blob.url,
+      url: fileUrl,
       tokenId,
       filename: file.name,
       size: file.size,

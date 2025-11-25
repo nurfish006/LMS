@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -115,10 +114,10 @@ export default function AdminNewsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2">News Management</h1>
+          <h1 className="text-3xl font-bold">News Management</h1>
           <p className="text-muted-foreground">Publish and manage university news</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
@@ -135,10 +134,8 @@ export default function AdminNewsPage() {
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
+                <Label>Title</Label>
                 <Input
-                  id="title"
-                  placeholder="News headline..."
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   required
@@ -146,10 +143,8 @@ export default function AdminNewsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="content">Content</Label>
+                <Label>Content</Label>
                 <Textarea
-                  id="content"
-                  placeholder="News content..."
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                   rows={6}
@@ -165,14 +160,14 @@ export default function AdminNewsPage() {
         </Dialog>
       </div>
 
-      <div className="grid gap-4">
+      <div className="space-y-4">
         {news.map((item) => (
           <Card key={item._id}>
             <CardHeader>
               <div className="flex items-start justify-between">
-                <div className="flex items-start gap-3">
-                  <div className="bg-primary/10 p-2 rounded">
-                    <Newspaper className="h-5 w-5 text-primary" />
+                <div className="flex items-start gap-4">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Newspaper className="h-6 w-6 text-primary" />
                   </div>
                   <div>
                     <CardTitle>{item.title}</CardTitle>
@@ -181,13 +176,13 @@ export default function AdminNewsPage() {
                     </CardDescription>
                   </div>
                 </div>
-                <Button size="sm" variant="ghost" onClick={() => handleDelete(item._id)}>
+                <Button variant="ghost" size="sm" onClick={() => handleDelete(item._id)}>
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground leading-relaxed">{item.content}</p>
+              <p className="text-muted-foreground whitespace-pre-wrap">{item.content}</p>
             </CardContent>
           </Card>
         ))}

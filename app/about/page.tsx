@@ -4,27 +4,27 @@ import { ArrowLeft, GraduationCap, Users, BookOpen, Target } from "lucide-react"
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="container mx-auto px-4 py-6 border-b border-border">
-        <nav className="flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
+    <main className="min-h-screen bg-background">
+      <header className="border-b bg-card">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <GraduationCap className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold text-foreground">Woldia University ELS</span>
-          </Link>
+            <span className="font-bold text-xl">Woldia University ELS</span>
+          </div>
           <Link href="/">
-            <Button variant="ghost" className="gap-2">
+            <Button variant="outline" className="gap-2 bg-transparent">
               <ArrowLeft className="h-4 w-4" />
               Back to Home
             </Button>
           </Link>
-        </nav>
+        </div>
       </header>
 
-      <main className="container mx-auto px-4 py-16 max-w-4xl">
-        <h1 className="text-4xl font-bold mb-8 text-center">About Woldia University E-Learning System</h1>
+      <div className="container mx-auto px-4 py-16">
+        <h1 className="text-4xl font-bold text-center mb-8">About Woldia University E-Learning System</h1>
 
-        <div className="prose prose-lg dark:prose-invert mx-auto mb-16 text-muted-foreground">
-          <p className="leading-relaxed">
+        <div className="max-w-3xl mx-auto text-center mb-16">
+          <p className="text-lg text-muted-foreground">
             Woldia University E-learning System is an innovative educational platform designed to bridge the gap between
             traditional learning and modern technology. Our system provides a comprehensive digital environment where
             students and faculty can collaborate, share resources, and engage in the learning process efficiently.
@@ -32,17 +32,18 @@ export default function AboutPage() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 mb-16">
-          <div className="bg-card p-8 rounded-xl border border-border">
-            <Target className="h-10 w-10 text-primary mb-4" />
-            <h3 className="text-xl font-bold mb-3">Our Mission</h3>
+          <div className="p-8 rounded-lg border bg-card">
+            <Target className="h-12 w-12 text-primary mb-4" />
+            <h2 className="text-2xl font-semibold mb-4">Our Mission</h2>
             <p className="text-muted-foreground">
               To enhance the quality of education by providing accessible, interactive, and user-friendly digital tools
               that support both teaching and learning processes at Woldia University.
             </p>
           </div>
-          <div className="bg-card p-8 rounded-xl border border-border">
-            <Users className="h-10 w-10 text-primary mb-4" />
-            <h3 className="text-xl font-bold mb-3">Who It's For</h3>
+
+          <div className="p-8 rounded-lg border bg-card">
+            <Users className="h-12 w-12 text-primary mb-4" />
+            <h2 className="text-2xl font-semibold mb-4">Who It's For</h2>
             <p className="text-muted-foreground">
               Designed for the entire university community, including students seeking flexible learning options,
               faculty members managing courses, and administrators overseeing the academic process.
@@ -50,53 +51,48 @@ export default function AboutPage() {
           </div>
         </div>
 
-        <div className="space-y-12">
-          <section>
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <BookOpen className="h-6 w-6 text-primary" />
-              Key Features
-            </h2>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {[
-                "Comprehensive Course Management",
-                "Digital Assignment Submission",
-                "Real-time Communication Tools",
-                "Resource & Material Distribution",
-                "Automated Grading System",
-                "University News & Announcements",
-              ].map((feature, i) => (
-                <div key={i} className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
-                  <div className="h-2 w-2 rounded-full bg-primary" />
-                  <span>{feature}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="bg-primary/5 rounded-2xl p-8 text-center">
-            <h2 className="text-2xl font-bold mb-4">Ready to get started?</h2>
-            <p className="text-muted-foreground mb-6">
-              Join the Woldia University E-Learning community today and transform your educational experience.
-            </p>
-            <div className="flex gap-4 justify-center">
-              <Link href="/register">
-                <Button size="lg">Create Account</Button>
-              </Link>
-              <Link href="/login">
-                <Button size="lg" variant="outline">
-                  Login
-                </Button>
-              </Link>
-            </div>
-          </section>
+        <div className="bg-muted/50 rounded-lg p-8 mb-16">
+          <h2 className="text-2xl font-semibold text-center mb-8">Key Features</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              "Comprehensive Course Management",
+              "Digital Assignment Submission",
+              "Real-time Communication Tools",
+              "Resource & Material Distribution",
+              "Automated Grading System",
+              "University News & Announcements",
+            ].map((feature, i) => (
+              <div key={i} className="flex items-center gap-3 p-4 bg-card rounded-lg">
+                <BookOpen className="h-5 w-5 text-primary flex-shrink-0" />
+                <span>{feature}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </main>
 
-      <footer className="border-t border-border mt-12 py-8">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold mb-4">Ready to get started?</h2>
+          <p className="text-muted-foreground mb-8">
+            Join the Woldia University E-Learning community today and transform your educational experience.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Link href="/register">
+              <Button size="lg">Create Account</Button>
+            </Link>
+            <Link href="/login">
+              <Button size="lg" variant="outline">
+                Login
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <footer className="border-t py-8 bg-card mt-16">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>&copy; 2023 Woldia University. All rights reserved.</p>
+          &copy; 2023 Woldia University. All rights reserved.
         </div>
       </footer>
-    </div>
+    </main>
   )
 }

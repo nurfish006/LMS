@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
@@ -42,16 +41,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-slate-950 dark:to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="bg-primary/10 p-3 rounded-full">
-              <GraduationCap className="h-10 w-10 text-primary" />
-            </div>
+            <GraduationCap className="h-12 w-12 text-primary" />
           </div>
           <CardTitle className="text-2xl">Welcome Back</CardTitle>
           <CardDescription>Login to access your Woldia University E-Learning account</CardDescription>
@@ -63,7 +60,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="student@wdu.edu.et"
+                placeholder="your.email@woldia.edu.et"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -84,12 +81,12 @@ export default function LoginPage() {
               {loading ? "Logging in..." : "Login"}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-muted-foreground mt-4">
             Don't have an account?{" "}
             <Link href="/register" className="text-primary hover:underline">
               Register here
             </Link>
-          </div>
+          </p>
         </CardContent>
       </Card>
     </div>

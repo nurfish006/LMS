@@ -17,9 +17,7 @@ export async function GET(request: NextRequest) {
     const usersCollection = db.collection<User>("users")
 
     const query: any = {}
-    if (role) {
-      query.role = role
-    }
+    if (role) query.role = role
 
     const users = await usersCollection
       .find(query, { projection: { password: 0 } })
@@ -50,16 +48,13 @@ export async function POST(request: NextRequest) {
     const db = await getDatabase()
     const usersCollection = db.collection<User>("users")
 
-    // Check if user already exists
     const existingUser = await usersCollection.findOne({ email })
     if (existingUser) {
       return NextResponse.json({ error: "User already exists" }, { status: 400 })
     }
 
-    // Hash password
     const hashedPassword = await hashPassword(password)
 
-    // Create user
     const newUser: User = {
       email,
       password: hashedPassword,

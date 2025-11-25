@@ -31,19 +31,19 @@ export default function StudentNewsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold mb-2">University News</h1>
+        <h1 className="text-3xl font-bold">University News</h1>
         <p className="text-muted-foreground">Latest updates and announcements</p>
       </div>
 
-      <div className="grid gap-4">
+      <div className="space-y-4">
         {news.map((item) => (
           <Card key={item._id}>
             <CardHeader>
-              <div className="flex items-start gap-3">
-                <div className="bg-primary/10 p-2 rounded">
-                  <Newspaper className="h-5 w-5 text-primary" />
+              <div className="flex items-start gap-4">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Newspaper className="h-6 w-6 text-primary" />
                 </div>
                 <div>
                   <CardTitle>{item.title}</CardTitle>
@@ -54,7 +54,7 @@ export default function StudentNewsPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground leading-relaxed">{item.content}</p>
+              <p className="text-muted-foreground whitespace-pre-wrap">{item.content}</p>
             </CardContent>
           </Card>
         ))}

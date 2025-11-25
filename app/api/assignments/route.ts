@@ -17,9 +17,7 @@ export async function GET(request: NextRequest) {
     const assignmentsCollection = db.collection<Assignment>("assignments")
 
     const query: any = {}
-    if (courseId) {
-      query.courseId = courseId
-    }
+    if (courseId) query.courseId = courseId
 
     const assignments = await assignmentsCollection.find(query).sort({ dueDate: 1 }).toArray()
 

@@ -65,7 +65,16 @@ export interface Message {
   senderId: string
   senderName: string
   senderRole: string
+  receiverId: string
+  receiverName: string
   content: string
+  attachment?: {
+    url: string
+    filename: string
+    type: string
+    size: number
+  }
+  read: boolean
   createdAt: Date
 }
 

@@ -14,18 +14,14 @@ export async function POST(request: NextRequest) {
 
     if (!process.env.MONGODB_URI) {
       return NextResponse.json(
-        {
-          error: "Database configuration error. Please add MONGODB_URI to environment variables.",
-        },
+        { error: "Database configuration error. Please add MONGODB_URI to environment variables." },
         { status: 500 },
       )
     }
 
     if (!process.env.JWT_SECRET) {
       return NextResponse.json(
-        {
-          error: "Authentication configuration error. Please add JWT_SECRET to environment variables.",
-        },
+        { error: "Authentication configuration error. Please add JWT_SECRET to environment variables." },
         { status: 500 },
       )
     }
@@ -33,16 +29,13 @@ export async function POST(request: NextRequest) {
     const db = await getDatabase()
     const usersCollection = db.collection<User>("users")
 
-    // Check if user already exists
     const existingUser = await usersCollection.findOne({ email })
     if (existingUser) {
       return NextResponse.json({ error: "User already exists" }, { status: 400 })
     }
 
-    // Hash password
     const hashedPassword = await hashPassword(password)
 
-    // Create user
     const newUser: User = {
       email,
       password: hashedPassword,
@@ -61,11 +54,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "User registered successfully" }, { status: 201 })
   } catch (error: any) {
     console.error("[v0] Registration error:", error.message)
-    return NextResponse.json(
-      {
-        error: `Registration failed: ${error.message}`,
-      },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: `Registration failed: ${error.message}` }, { status: 500 })
   }
 }

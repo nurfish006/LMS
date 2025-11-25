@@ -18,12 +18,8 @@ export async function GET(request: NextRequest) {
     const department = searchParams.get("department")
 
     const query: any = {}
-    if (teacherId) {
-      query.teacherId = teacherId
-    }
-    if (department) {
-      query.department = department
-    }
+    if (teacherId) query.teacherId = teacherId
+    if (department) query.department = department
 
     const courses = await coursesCollection.find(query).toArray()
 

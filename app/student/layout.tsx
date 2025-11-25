@@ -1,17 +1,12 @@
 "use client"
 
 import type React from "react"
-
 import { useAuth } from "@/components/auth-provider"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { StudentNav } from "@/components/student-nav"
 
-export default function StudentLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function StudentLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
   const router = useRouter()
 
@@ -24,7 +19,7 @@ export default function StudentLayout({
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
+        <div className="text-lg">Loading...</div>
       </div>
     )
   }
@@ -34,7 +29,7 @@ export default function StudentLayout({
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-background">
       <StudentNav />
       <main className="container mx-auto px-4 py-8">{children}</main>
     </div>

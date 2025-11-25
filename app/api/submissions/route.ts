@@ -18,9 +18,7 @@ export async function GET(request: NextRequest) {
     const submissionsCollection = db.collection<Submission>("submissions")
 
     const query: any = {}
-    if (assignmentId) {
-      query.assignmentId = assignmentId
-    }
+    if (assignmentId) query.assignmentId = assignmentId
     if (session.role === "student") {
       query.studentId = session.userId
     } else if (studentId) {
@@ -72,19 +70,15 @@ export async function POST(request: NextRequest) {
       if (!uploadAsset) {
         return NextResponse.json({ error: "Invalid upload token" }, { status: 400 })
       }
-
       if (uploadAsset.claimed) {
         return NextResponse.json({ error: "Upload token already used" }, { status: 400 })
       }
-
       if (uploadAsset.uploadedBy !== session.userId) {
         return NextResponse.json({ error: "Unauthorized to use this upload" }, { status: 403 })
       }
-
       if (uploadAsset.type !== "submission") {
         return NextResponse.json({ error: "Invalid upload type for submission" }, { status: 400 })
       }
-
       if (new Date() > new Date(uploadAsset.expiresAt)) {
         return NextResponse.json({ error: "Upload token expired" }, { status: 400 })
       }
@@ -108,7 +102,7 @@ export async function POST(request: NextRequest) {
       const uploadsCollection = db.collection("uploads")
       await uploadsCollection.updateOne(
         { _id: assetId },
-        { $set: { claimed: true, linkedTo: result.insertedId.toString() } }
+        { $set: { claimed: true, linkedTo: result.insertedId.toString() } },
       )
     }
 

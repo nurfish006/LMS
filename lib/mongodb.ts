@@ -8,7 +8,6 @@ declare global {
 }
 
 function getClientPromise(): Promise<MongoClient> {
-  // Check for MongoDB URI only when actually connecting
   if (!process.env.MONGODB_URI) {
     throw new Error("Please add your MongoDB URI to .env.local")
   }
@@ -18,23 +17,15 @@ function getClientPromise(): Promise<MongoClient> {
   }
 
   const uri = process.env.MONGODB_URI
-
   const options = {
-    // SSL/TLS options for MongoDB Atlas
     tls: true,
     tlsAllowInvalidCertificates: false,
     tlsAllowInvalidHostnames: false,
-
-    // Connection timeout settings
     serverSelectionTimeoutMS: 5000,
     connectTimeoutMS: 10000,
     socketTimeoutMS: 45000,
-
-    // Connection pool settings
     maxPoolSize: 10,
     minPoolSize: 2,
-
-    // Retry settings
     retryWrites: true,
     retryReads: true,
   }
@@ -59,5 +50,4 @@ export async function getDatabase(): Promise<Db> {
 }
 
 export const getDb = getDatabase
-
 export default getClientPromise

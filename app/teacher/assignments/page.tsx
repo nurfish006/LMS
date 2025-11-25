@@ -1,15 +1,13 @@
 "use client"
 
-import type React from "react"
-
-import { useEffect, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
-import { Plus, Eye } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -18,7 +16,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
+import { useToast } from "@/hooks/use-toast"
+import { FileUpload } from "@/components/file-upload"
+import { Plus, FileText, Download, Loader2, Calendar, CheckCircle, Users } from "lucide-react"
+import { format, isPast } from "date-fns"
 
 interface Course {
   _id: string
@@ -28,69 +31,74 @@ interface Course {
 
 interface Assignment {
   _id: string
+  courseId: string
   title: string
   description: string
   dueDate: string
   totalPoints: number
-  courseId: string
+  fileUrl?: string
+  createdAt: string
 }
 
 interface Submission {
   _id: string
   assignmentId: string
   studentId: string
+  studentName?: string
   fileUrl: string
   submittedAt: string
   grade?: number
+  feedback?: string
 }
 
 export default function TeacherAssignmentsPage() {
+  const searchParams = useSearchParams()
+  const preselectedCourseId = searchParams.get("courseId")
+  const { toast } = useToast()
+
   const [courses, setCourses] = useState<Course[]>([])
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [submissions, setSubmissions] = useState<Submission[]>([])
-  const [open, setOpen] = useState(false)
-  const [viewOpen, setViewOpen] = useState(false)
-  const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null)
+  const [selectedCourse, setSelectedCourse] = useState<string>(preselectedCourseId || "")
+  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [creating, setCreating] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [gradeDialogOpen, setGradeDialogOpen] = useState(false)
+  const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
+  const [gradeData, setGradeData] = useState({ grade: "", feedback: "" })
+  const [uploadedFile, setUploadedFile] = useState<{ url: string; tokenId: string; filename: string } | null>(null)
   const [formData, setFormData] = useState({
-    courseId: "",
     title: "",
     description: "",
     dueDate: "",
-    totalPoints: "",
-    fileUrl: "",
+    totalPoints: "100",
   })
-  const { toast } = useToast()
-
-  useEffect(() => {
-    fetchCourses()
-    fetchAssignments()
-  }, [])
 
   const fetchCourses = async () => {
     try {
       const response = await fetch("/api/courses")
       if (response.ok) {
         const data = await response.json()
-        setCourses(data.courses)
+        setCourses(data.courses || [])
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load courses",
-        variant: "destructive",
-      })
+      console.error("Error fetching courses:", error)
     }
   }
 
-  const fetchAssignments = async () => {
+  const fetchAssignments = async (courseId: string) => {
+    if (!courseId) return
     try {
-      const response = await fetch("/api/assignments")
+      const response = await fetch(`/api/assignments?courseId=${courseId}`)
       if (response.ok) {
         const data = await response.json()
-        setAssignments(data.assignments)
+        setAssignments(data.assignments || [])
       }
     } catch (error) {
-      console.error("[v0] Fetch assignments error:", error)
+      console.error("Error fetching assignments:", error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -99,286 +107,344 @@ export default function TeacherAssignmentsPage() {
       const response = await fetch(`/api/submissions?assignmentId=${assignmentId}`)
       if (response.ok) {
         const data = await response.json()
-        setSubmissions(data.submissions)
+        setSubmissions(data.submissions || [])
       }
     } catch (error) {
-      console.error("[v0] Fetch submissions error:", error)
+      console.error("Error fetching submissions:", error)
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  useEffect(() => {
+    fetchCourses()
+  }, [])
 
+  useEffect(() => {
+    if (selectedCourse) {
+      setLoading(true)
+      fetchAssignments(selectedCourse)
+    }
+  }, [selectedCourse])
+
+  useEffect(() => {
+    if (selectedAssignment) {
+      fetchSubmissions(selectedAssignment._id)
+    }
+  }, [selectedAssignment])
+
+  const handleCreate = async () => {
+    if (!selectedCourse || !formData.title || !formData.dueDate) {
+      toast({ title: "Please fill in all required fields", variant: "destructive" })
+      return
+    }
+
+    setCreating(true)
     try {
       const response = await fetch("/api/assignments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...formData,
+          courseId: selectedCourse,
+          title: formData.title,
+          description: formData.description,
+          dueDate: new Date(formData.dueDate).toISOString(),
           totalPoints: Number.parseInt(formData.totalPoints),
+          fileUrl: uploadedFile?.url,
         }),
       })
 
       if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Assignment created successfully",
-        })
-        fetchAssignments()
-        setOpen(false)
-        setFormData({
-          courseId: "",
-          title: "",
-          description: "",
-          dueDate: "",
-          totalPoints: "",
-          fileUrl: "",
-        })
+        toast({ title: "Assignment created successfully" })
+        setDialogOpen(false)
+        setFormData({ title: "", description: "", dueDate: "", totalPoints: "100" })
+        setUploadedFile(null)
+        fetchAssignments(selectedCourse)
       } else {
         const data = await response.json()
-        throw new Error(data.error)
+        toast({ title: data.error || "Failed to create assignment", variant: "destructive" })
       }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      })
+    } catch (error) {
+      toast({ title: "Failed to create assignment", variant: "destructive" })
+    } finally {
+      setCreating(false)
     }
   }
 
-  const handleViewSubmissions = (assignmentId: string) => {
-    setSelectedAssignment(assignmentId)
-    fetchSubmissions(assignmentId)
-    setViewOpen(true)
-  }
+  const handleGrade = async () => {
+    if (!selectedSubmission || !gradeData.grade) {
+      toast({ title: "Please enter a grade", variant: "destructive" })
+      return
+    }
 
-  const handleGrade = async (submissionId: string, grade: number, feedback: string) => {
     try {
-      const response = await fetch(`/api/submissions/${submissionId}/grade`, {
-        method: "PATCH",
+      const response = await fetch(`/api/submissions/${selectedSubmission._id}/grade`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ grade, feedback }),
+        body: JSON.stringify({
+          grade: Number.parseFloat(gradeData.grade),
+          feedback: gradeData.feedback,
+        }),
       })
 
       if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Grade submitted successfully",
-        })
-        if (selectedAssignment) {
-          fetchSubmissions(selectedAssignment)
-        }
-      } else {
-        throw new Error("Failed to submit grade")
+        toast({ title: "Submission graded successfully" })
+        setGradeDialogOpen(false)
+        setGradeData({ grade: "", feedback: "" })
+        if (selectedAssignment) fetchSubmissions(selectedAssignment._id)
       }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      })
+    } catch (error) {
+      toast({ title: "Failed to grade submission", variant: "destructive" })
     }
-  }
-
-  const getDownloadUrl = (submission: Submission) => {
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(submission.fileUrl)
-    if (isUUID) {
-      return `/api/download?submissionId=${submission._id}`
-    }
-    return submission.fileUrl
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Assignments</h1>
-          <p className="text-muted-foreground">Create and manage course assignments</p>
+          <h1 className="text-2xl font-bold">Assignments</h1>
+          <p className="text-muted-foreground">Create assignments and grade submissions</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button disabled={!selectedCourse}>
               <Plus className="h-4 w-4 mr-2" />
               Create Assignment
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Create New Assignment</DialogTitle>
-              <DialogDescription>Add a new assignment for your students</DialogDescription>
+              <DialogTitle>Create Assignment</DialogTitle>
+              <DialogDescription>Create a new assignment for your students</DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-4 mt-4">
               <div className="space-y-2">
-                <Label htmlFor="courseId">Course</Label>
-                <Select
-                  value={formData.courseId}
-                  onValueChange={(value) => setFormData({ ...formData, courseId: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a course" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {courses.map((course) => (
-                      <SelectItem key={course._id} value={course._id}>
-                        {course.code} - {course.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="title">Assignment Title</Label>
+                <Label htmlFor="title">Title *</Label>
                 <Input
                   id="title"
-                  placeholder="Assignment 1: Introduction to Programming"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  required
+                  placeholder="e.g., Assignment 1 - Database Design"
                 />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">Instructions</Label>
                 <Textarea
                   id="description"
-                  placeholder="Assignment instructions and requirements..."
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={4}
+                  placeholder="Describe what students need to do..."
+                  rows={3}
                 />
               </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="dueDate">Due Date</Label>
+                  <Label htmlFor="dueDate">Due Date *</Label>
                   <Input
                     id="dueDate"
                     type="datetime-local"
                     value={formData.dueDate}
                     onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                    required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="totalPoints">Total Points</Label>
+                  <Label htmlFor="points">Total Points</Label>
                   <Input
-                    id="totalPoints"
+                    id="points"
                     type="number"
-                    placeholder="100"
                     value={formData.totalPoints}
                     onChange={(e) => setFormData({ ...formData, totalPoints: e.target.value })}
-                    required
                   />
                 </div>
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="fileUrl">Attachment URL (Optional)</Label>
-                <Input
-                  id="fileUrl"
-                  placeholder="https://example.com/assignment1.pdf"
-                  value={formData.fileUrl}
-                  onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
+                <Label>Attachment (Optional)</Label>
+                <FileUpload
+                  uploadType="material"
+                  accept=".pdf,.doc,.docx,.zip"
+                  onUploadComplete={(data) => setUploadedFile(data)}
                 />
               </div>
-
-              <Button type="submit" className="w-full">
+              <Button onClick={handleCreate} disabled={creating} className="w-full">
+                {creating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Create Assignment
               </Button>
-            </form>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="grid gap-4">
-        {assignments.map((assignment) => {
-          const course = courses.find((c) => c._id === assignment.courseId)
-          return (
-            <Card key={assignment._id}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle>{assignment.title}</CardTitle>
-                    <CardDescription>
-                      {course?.code} - Due: {new Date(assignment.dueDate).toLocaleDateString()}
-                    </CardDescription>
-                  </div>
-                  <Button size="sm" onClick={() => handleViewSubmissions(assignment._id)}>
-                    <Eye className="h-4 w-4 mr-2" />
-                    View Submissions
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-2">{assignment.description}</p>
-                <p className="text-sm">
-                  <strong>Points:</strong> {assignment.totalPoints}
-                </p>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Select Course</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+            <SelectTrigger className="w-full md:w-80">
+              <SelectValue placeholder="Select a course" />
+            </SelectTrigger>
+            <SelectContent>
+              {courses.map((course) => (
+                <SelectItem key={course._id} value={course._id}>
+                  {course.code} - {course.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
 
-      {/* View Submissions Dialog */}
-      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Assignment Submissions</DialogTitle>
-            <DialogDescription>Review and grade student submissions</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 max-h-96 overflow-y-auto">
-            {submissions.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">No submissions yet</p>
+      {selectedCourse && (
+        <Tabs defaultValue="assignments" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="assignments">Assignments</TabsTrigger>
+            <TabsTrigger value="submissions" disabled={!selectedAssignment}>
+              Submissions {selectedAssignment && `(${submissions.length})`}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="assignments" className="space-y-4">
+            {loading ? (
+              <div className="flex items-center justify-center h-32">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : assignments.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium">No assignments yet</h3>
+                  <p className="text-muted-foreground">Create your first assignment</p>
+                </CardContent>
+              </Card>
             ) : (
-              submissions.map((submission) => (
-                <Card key={submission._id}>
-                  <CardContent className="pt-6">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm">
-                          <strong>Student ID:</strong> {submission.studentId}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(submission.submittedAt).toLocaleString()}
-                        </p>
+              <div className="grid gap-4 md:grid-cols-2">
+                {assignments.map((assignment) => (
+                  <Card
+                    key={assignment._id}
+                    className={`cursor-pointer transition-all ${selectedAssignment?._id === assignment._id ? "ring-2 ring-primary" : "hover:shadow-md"}`}
+                    onClick={() => setSelectedAssignment(assignment)}
+                  >
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start justify-between">
+                        <CardTitle className="text-lg">{assignment.title}</CardTitle>
+                        <Badge variant={isPast(new Date(assignment.dueDate)) ? "destructive" : "secondary"}>
+                          {isPast(new Date(assignment.dueDate)) ? "Past Due" : "Active"}
+                        </Badge>
                       </div>
-                      <Button size="sm" variant="outline" asChild>
-                        <a href={getDownloadUrl(submission)} target="_blank" rel="noopener noreferrer">
-                          View Submission
-                        </a>
-                      </Button>
-                      {submission.grade !== undefined ? (
-                        <div className="p-3 bg-muted rounded">
-                          <p className="text-sm">
-                            <strong>Grade:</strong> {submission.grade}
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                        {assignment.description || "No description"}
+                      </p>
+                      <div className="flex items-center gap-4 text-sm">
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <Calendar className="h-4 w-4" />
+                          {format(new Date(assignment.dueDate), "MMM d, h:mm a")}
+                        </div>
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <CheckCircle className="h-4 w-4" />
+                          {assignment.totalPoints} pts
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="submissions" className="space-y-4">
+            {submissions.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <Users className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium">No submissions yet</h3>
+                  <p className="text-muted-foreground">Students haven't submitted yet</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {submissions.map((submission) => (
+                  <Card key={submission._id}>
+                    <CardContent className="flex items-center justify-between p-4">
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                          <FileText className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-medium">Student ID: {submission.studentId}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Submitted: {format(new Date(submission.submittedAt), "MMM d, h:mm a")}
                           </p>
                         </div>
-                      ) : (
-                        <div className="flex gap-2">
-                          <Input type="number" placeholder="Grade" className="w-24" id={`grade-${submission._id}`} />
-                          <Input placeholder="Feedback (optional)" id={`feedback-${submission._id}`} />
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              const gradeInput = document.getElementById(`grade-${submission._id}`) as HTMLInputElement
-                              const feedbackInput = document.getElementById(
-                                `feedback-${submission._id}`,
-                              ) as HTMLInputElement
-                              handleGrade(submission._id, Number.parseInt(gradeInput.value), feedbackInput.value)
-                            }}
-                          >
-                            Submit Grade
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {submission.grade !== undefined ? (
+                          <Badge variant="outline" className="text-green-600">
+                            {submission.grade}/{selectedAssignment?.totalPoints}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-amber-600">
+                            Pending
+                          </Badge>
+                        )}
+                        <Button variant="outline" size="sm" asChild>
+                          <a href={submission.fileUrl} target="_blank" rel="noopener noreferrer">
+                            <Download className="h-4 w-4" />
+                          </a>
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setSelectedSubmission(submission)
+                            setGradeData({
+                              grade: submission.grade?.toString() || "",
+                              feedback: submission.feedback || "",
+                            })
+                            setGradeDialogOpen(true)
+                          }}
+                        >
+                          Grade
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             )}
+          </TabsContent>
+        </Tabs>
+      )}
+
+      {/* Grade Dialog */}
+      <Dialog open={gradeDialogOpen} onOpenChange={setGradeDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Grade Submission</DialogTitle>
+            <DialogDescription>Enter grade and feedback for this submission</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="grade">Grade (out of {selectedAssignment?.totalPoints})</Label>
+              <Input
+                id="grade"
+                type="number"
+                value={gradeData.grade}
+                onChange={(e) => setGradeData({ ...gradeData, grade: e.target.value })}
+                max={selectedAssignment?.totalPoints}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="feedback">Feedback</Label>
+              <Textarea
+                id="feedback"
+                value={gradeData.feedback}
+                onChange={(e) => setGradeData({ ...gradeData, feedback: e.target.value })}
+                placeholder="Optional feedback for the student..."
+                rows={3}
+              />
+            </div>
+            <Button onClick={handleGrade} className="w-full">
+              Submit Grade
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

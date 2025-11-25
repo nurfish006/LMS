@@ -3,8 +3,9 @@ import { getDatabase } from "@/lib/mongodb"
 import { getSession } from "@/lib/auth"
 import { ObjectId } from "mongodb"
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const session = await getSession()
     if (!session || session.role !== "admin") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -13,9 +14,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const db = await getDatabase()
     const usersCollection = db.collection("users")
 
-    const result = await usersCollection.deleteOne({
-      _id: new ObjectId(params.id),
-    })
+    const result = await usersCollection.deleteOne({ _id: new ObjectId(id) })
 
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
@@ -28,8 +27,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const session = await getSession()
     if (!session || session.role !== "admin") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -48,7 +48,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     if (year) updateData.year = year
     if (semester) updateData.semester = semester
 
-    const result = await usersCollection.updateOne({ _id: new ObjectId(params.id) }, { $set: updateData })
+    const result = await usersCollection.updateOne({ _id: new ObjectId(id) }, { $set: updateData })
 
     if (result.matchedCount === 0) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })

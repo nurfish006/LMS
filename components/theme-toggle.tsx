@@ -14,7 +14,7 @@ export function ThemeToggle() {
   }, [])
 
   if (!mounted) {
-    return <div className="w-9 h-9" />
+    return <Button variant="ghost" size="sm" className="gap-2" />
   }
 
   return (
@@ -26,7 +26,7 @@ export function ThemeToggle() {
       title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
     >
       {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-      <span className="hidden md:inline text-sm">{theme === "dark" ? "Light" : "Dark"}</span>
+      <span className="hidden md:inline">{theme === "dark" ? "Light" : "Dark"}</span>
     </Button>
   )
 }

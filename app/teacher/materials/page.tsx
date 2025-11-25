@@ -1,15 +1,13 @@
 "use client"
 
-import type React from "react"
-
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
-import { Plus, UploadIcon } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -18,7 +16,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useToast } from "@/hooks/use-toast"
+import { FileUpload } from "@/components/file-upload"
+import { Plus, FileText, Download, Trash2, Loader2, Upload } from "lucide-react"
+import { format } from "date-fns"
 
 interface Course {
   _id: string
@@ -26,117 +27,120 @@ interface Course {
   code: string
 }
 
+interface Material {
+  _id: string
+  courseId: string
+  title: string
+  description: string
+  fileUrl: string
+  fileType: string
+  createdAt: string
+}
+
 export default function TeacherMaterialsPage() {
-  const [courses, setCourses] = useState<Course[]>([])
-  const [open, setOpen] = useState(false)
-  const [uploadMethod, setUploadMethod] = useState<"file" | "url">("file")
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [uploading, setUploading] = useState(false)
-  const [formData, setFormData] = useState({
-    courseId: "",
-    title: "",
-    description: "",
-    fileUrl: "",
-    fileType: "application/pdf",
-  })
+  const searchParams = useSearchParams()
+  const preselectedCourseId = searchParams.get("courseId")
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchCourses()
-  }, [])
+  const [courses, setCourses] = useState<Course[]>([])
+  const [materials, setMaterials] = useState<Material[]>([])
+  const [selectedCourse, setSelectedCourse] = useState<string>(preselectedCourseId || "")
+  const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [uploadedFile, setUploadedFile] = useState<{ url: string; tokenId: string; filename: string } | null>(null)
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+  })
 
   const fetchCourses = async () => {
     try {
       const response = await fetch("/api/courses")
       if (response.ok) {
         const data = await response.json()
-        setCourses(data.courses)
+        setCourses(data.courses || [])
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load courses",
-        variant: "destructive",
-      })
+      console.error("Error fetching courses:", error)
     }
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0])
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setUploading(true)
-
+  const fetchMaterials = async (courseId: string) => {
+    if (!courseId) return
     try {
-      let tokenId: string | undefined
-      let fileUrl = uploadMethod === "url" ? formData.fileUrl : undefined
-
-      if (uploadMethod === "file") {
-        if (!selectedFile) {
-          throw new Error("Please select a file")
-        }
-
-        const uploadFormData = new FormData()
-        uploadFormData.append("file", selectedFile)
-        uploadFormData.append("type", "material")
-
-        const uploadResponse = await fetch("/api/upload", {
-          method: "POST",
-          body: uploadFormData,
-        })
-
-        if (!uploadResponse.ok) {
-          const errorData = await uploadResponse.json()
-          throw new Error(errorData.error || "Failed to upload file")
-        }
-
-        const uploadData = await uploadResponse.json()
-        tokenId = uploadData.tokenId
+      const response = await fetch(`/api/materials?courseId=${courseId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setMaterials(data.materials || [])
       }
+    } catch (error) {
+      console.error("Error fetching materials:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
+  useEffect(() => {
+    fetchCourses()
+  }, [])
+
+  useEffect(() => {
+    if (selectedCourse) {
+      setLoading(true)
+      fetchMaterials(selectedCourse)
+    }
+  }, [selectedCourse])
+
+  const handleUpload = async () => {
+    if (!selectedCourse || !formData.title || !uploadedFile) {
+      toast({ title: "Please fill in all required fields and upload a file", variant: "destructive" })
+      return
+    }
+
+    setUploading(true)
+    try {
       const response = await fetch("/api/materials", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          courseId: formData.courseId,
+          courseId: selectedCourse,
           title: formData.title,
           description: formData.description,
-          tokenId,
-          fileUrl,
-          fileType: formData.fileType,
+          fileUrl: uploadedFile.url,
+          tokenId: uploadedFile.tokenId,
+          fileType: "file",
         }),
       })
 
       if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Material uploaded successfully",
-        })
-        setOpen(false)
-        setSelectedFile(null)
-        setFormData({
-          courseId: "",
-          title: "",
-          description: "",
-          fileUrl: "",
-          fileType: "application/pdf",
-        })
+        toast({ title: "Material uploaded successfully" })
+        setDialogOpen(false)
+        setFormData({ title: "", description: "" })
+        setUploadedFile(null)
+        fetchMaterials(selectedCourse)
       } else {
         const data = await response.json()
-        throw new Error(data.error || "Failed to create material")
+        toast({ title: data.error || "Failed to upload material", variant: "destructive" })
       }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      })
+    } catch (error) {
+      toast({ title: "Failed to upload material", variant: "destructive" })
     } finally {
       setUploading(false)
+    }
+  }
+
+  const handleDelete = async (materialId: string) => {
+    if (!confirm("Are you sure you want to delete this material?")) return
+
+    try {
+      const response = await fetch(`/api/materials/${materialId}`, { method: "DELETE" })
+      if (response.ok) {
+        toast({ title: "Material deleted" })
+        fetchMaterials(selectedCourse)
+      }
+    } catch (error) {
+      toast({ title: "Failed to delete material", variant: "destructive" })
     }
   }
 
@@ -144,155 +148,127 @@ export default function TeacherMaterialsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Course Materials</h1>
-          <p className="text-muted-foreground">Upload and manage course materials</p>
+          <h1 className="text-2xl font-bold">Course Materials</h1>
+          <p className="text-muted-foreground">Upload and manage learning materials</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button disabled={!selectedCourse}>
               <Plus className="h-4 w-4 mr-2" />
               Upload Material
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Upload Course Material</DialogTitle>
-              <DialogDescription>Add learning resources for your students</DialogDescription>
+              <DialogTitle>Upload Material</DialogTitle>
+              <DialogDescription>Add new learning material to your course</DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-4 mt-4">
               <div className="space-y-2">
-                <Label htmlFor="courseId">Course</Label>
-                <Select
-                  value={formData.courseId}
-                  onValueChange={(value) => setFormData({ ...formData, courseId: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a course" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {courses.map((course) => (
-                      <SelectItem key={course._id} value={course._id}>
-                        {course.code} - {course.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="title">Material Title</Label>
+                <Label htmlFor="title">Title *</Label>
                 <Input
                   id="title"
-                  placeholder="Lecture 1: Introduction"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  required
+                  placeholder="e.g., Lecture 1 - Introduction"
                 />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
-                  placeholder="Brief description of the material..."
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={3}
+                  placeholder="Brief description of the material..."
+                  rows={2}
                 />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="fileType">File Type</Label>
-                <Select
-                  value={formData.fileType}
-                  onValueChange={(value) => setFormData({ ...formData, fileType: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="application/pdf">PDF Document</SelectItem>
-                    <SelectItem value="application/msword">Word Document</SelectItem>
-                    <SelectItem value="application/vnd.openxmlformats-officedocument.wordprocessingml.document">Word Document (DOCX)</SelectItem>
-                    <SelectItem value="video/mp4">Video (MP4)</SelectItem>
-                    <SelectItem value="audio/mpeg">Audio (MP3)</SelectItem>
-                    <SelectItem value="application/zip">ZIP Archive</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label>Upload File *</Label>
+                <FileUpload
+                  uploadType="material"
+                  accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar"
+                  onUploadComplete={(data) => setUploadedFile(data)}
+                />
               </div>
-
-              <div className="space-y-2">
-                <Label>Upload Method</Label>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant={uploadMethod === "file" ? "default" : "outline"}
-                    onClick={() => setUploadMethod("file")}
-                    className="flex-1"
-                  >
-                    Upload File
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={uploadMethod === "url" ? "default" : "outline"}
-                    onClick={() => setUploadMethod("url")}
-                    className="flex-1"
-                  >
-                    Provide URL
-                  </Button>
-                </div>
-              </div>
-
-              {uploadMethod === "file" ? (
-                <div className="space-y-2">
-                  <Label htmlFor="file">Select File</Label>
-                  <Input
-                    id="file"
-                    type="file"
-                    onChange={handleFileChange}
-                    accept=".pdf,.doc,.docx,.ppt,.pptx,.mp4,.mp3,.zip"
-                    required
-                  />
-                  {selectedFile && (
-                    <p className="text-xs text-muted-foreground">
-                      Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="fileUrl">File URL</Label>
-                  <Input
-                    id="fileUrl"
-                    placeholder="https://example.com/lecture1.pdf"
-                    value={formData.fileUrl}
-                    onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Upload your file to cloud storage and paste the URL here
-                  </p>
-                </div>
-              )}
-
-              <Button type="submit" className="w-full" disabled={uploading}>
-                <UploadIcon className="h-4 w-4 mr-2" />
-                {uploading ? "Uploading..." : "Upload Material"}
+              <Button onClick={handleUpload} disabled={uploading || !uploadedFile} className="w-full">
+                {uploading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Upload Material
               </Button>
-            </form>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Uploads</CardTitle>
-          <CardDescription>Materials uploaded in the last 30 days</CardDescription>
+          <CardTitle>Select Course</CardTitle>
+          <CardDescription>Choose a course to view and manage its materials</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-center text-muted-foreground py-8">Upload your first course material to get started</p>
+          <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+            <SelectTrigger className="w-full md:w-80">
+              <SelectValue placeholder="Select a course" />
+            </SelectTrigger>
+            <SelectContent>
+              {courses.map((course) => (
+                <SelectItem key={course._id} value={course._id}>
+                  {course.code} - {course.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </CardContent>
       </Card>
+
+      {selectedCourse && (
+        <>
+          {loading ? (
+            <div className="flex items-center justify-center h-32">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : materials.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Upload className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium">No materials yet</h3>
+                <p className="text-muted-foreground text-center mt-1">Upload your first material to get started</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {materials.map((material) => (
+                <Card key={material._id}>
+                  <CardContent className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-4">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <FileText className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium">{material.title}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {material.description || "No description"} •{" "}
+                          {format(new Date(material.createdAt), "MMM d, yyyy")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={material.fileUrl} target="_blank" rel="noopener noreferrer">
+                          <Download className="h-4 w-4" />
+                        </a>
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleDelete(material._id)}>
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   )
 }

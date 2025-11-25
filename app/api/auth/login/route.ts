@@ -23,19 +23,16 @@ export async function POST(request: NextRequest) {
     const db = await getDatabase()
     const usersCollection = db.collection<User>("users")
 
-    // Find user
     const user = await usersCollection.findOne({ email })
     if (!user) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
     }
 
-    // Verify password
     const isValid = await verifyPassword(password, user.password)
     if (!isValid) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
     }
 
-    // Create token
     const token = await createToken({
       userId: user._id,
       email: user.email,
@@ -44,7 +41,6 @@ export async function POST(request: NextRequest) {
       lastName: user.lastName,
     })
 
-    // Set session
     await setSession(token)
 
     return NextResponse.json({

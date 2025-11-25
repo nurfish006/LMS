@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { createContext, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
@@ -14,6 +13,7 @@ interface User {
   department?: string
   year?: number
   semester?: number
+  createdAt?: string
 }
 
 interface AuthContextType {

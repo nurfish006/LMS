@@ -1,66 +1,104 @@
-import { NextResponse } from "next/server"
-import { getDb } from "@/lib/mongodb"
-import { verifyToken } from "@/lib/auth"
+import { type NextRequest, NextResponse } from "next/server"
+import { getDatabase } from "@/lib/mongodb"
+import { getSession } from "@/lib/auth"
 import type { Message } from "@/lib/models"
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const token = request.headers.get("authorization")?.split(" ")[1]
-    if (!token) {
+    const session = await getSession()
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const user = verifyToken(token)
-    if (!user) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 })
+    const { searchParams } = new URL(request.url)
+    const partnerId = searchParams.get("partnerId")
+
+    const db = await getDatabase()
+    const messagesCollection = db.collection<Message>("messages")
+
+    let query: any = {
+      $or: [{ senderId: session.userId }, { receiverId: session.userId }],
     }
 
-    const db = await getDb()
-    const messages = await db.collection<Message>("messages").find({}).sort({ createdAt: -1 }).limit(100).toArray()
+    // If partnerId is provided, filter for direct conversation
+    if (partnerId) {
+      query = {
+        $or: [
+          { senderId: session.userId, receiverId: partnerId },
+          { senderId: partnerId, receiverId: session.userId },
+        ],
+      }
+    }
 
-    return NextResponse.json(messages)
+    const messages = await messagesCollection.find(query).sort({ createdAt: 1 }).limit(500).toArray()
+
+    return NextResponse.json({ messages })
   } catch (error) {
-    console.error("Error fetching messages:", error)
+    console.error("[v0] Error fetching messages:", error)
     return NextResponse.json({ error: "Failed to fetch messages" }, { status: 500 })
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const token = request.headers.get("authorization")?.split(" ")[1]
-    if (!token) {
+    const session = await getSession()
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const user = verifyToken(token)
-    if (!user) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 })
+    const body = await request.json()
+    const { receiverId, content, attachment } = body
+
+    if (!receiverId) {
+      return NextResponse.json({ error: "Receiver ID is required" }, { status: 400 })
     }
 
-    const { content } = await request.json()
-
-    if (!content || content.trim().length === 0) {
-      return NextResponse.json({ error: "Message content is required" }, { status: 400 })
+    if (!content && !attachment) {
+      return NextResponse.json({ error: "Message content or attachment is required" }, { status: 400 })
     }
 
-    const db = await getDb()
-    const senderName = user.firstName && user.lastName 
-      ? `${user.firstName} ${user.lastName}` 
-      : (user.email as string) || "Unknown User"
-    
+    const db = await getDatabase()
+
+    // Get receiver info
+    const usersCollection = db.collection("users")
+    const receiver = await usersCollection.findOne({ _id: new (await import("mongodb")).ObjectId(receiverId) })
+
+    if (!receiver) {
+      return NextResponse.json({ error: "Receiver not found" }, { status: 404 })
+    }
+
+    const senderName =
+      session.firstName && session.lastName
+        ? `${session.firstName} ${session.lastName}`
+        : (session.email as string) || "Unknown User"
+
+    const receiverName =
+      receiver.firstName && receiver.lastName
+        ? `${receiver.firstName} ${receiver.lastName}`
+        : receiver.email || "Unknown User"
+
     const message: Message = {
-      senderId: user.userId as string,
+      senderId: session.userId as string,
       senderName,
-      senderRole: user.role as string,
-      content: content.trim(),
+      senderRole: session.role as string,
+      receiverId,
+      receiverName,
+      content: content?.trim() || "",
+      attachment,
+      read: false,
       createdAt: new Date(),
     }
 
     const result = await db.collection("messages").insertOne(message)
 
-    return NextResponse.json({ ...message, _id: result.insertedId }, { status: 201 })
+    return NextResponse.json(
+      {
+        message: { ...message, _id: result.insertedId },
+      },
+      { status: 201 },
+    )
   } catch (error) {
-    console.error("Error creating message:", error)
+    console.error("[v0] Error creating message:", error)
     return NextResponse.json({ error: "Failed to send message" }, { status: 500 })
   }
 }

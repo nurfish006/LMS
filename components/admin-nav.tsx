@@ -27,58 +27,55 @@ export function AdminNav() {
   ]
 
   return (
-    <nav className="bg-white dark:bg-slate-950 border-b border-border">
+    <header className="border-b bg-card sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
             <Link href="/admin" className="flex items-center gap-2">
-              <GraduationCap className="h-6 w-6 text-primary" />
-              <span className="font-bold text-lg">WDU ELS Admin</span>
+              <GraduationCap className="h-8 w-8 text-primary" />
+              <span className="font-bold text-xl hidden md:inline">WDU ELS Admin</span>
             </Link>
-            <div className="hidden md:flex items-center gap-1">
+            <nav className="hidden md:flex items-center gap-1">
               {navItems.map((item) => {
                 const Icon = item.icon
                 const isActive = pathname === item.href
                 return (
                   <Link key={item.href} href={item.href}>
-                    <Button variant={isActive ? "default" : "ghost"} size="sm" className="gap-2">
+                    <Button variant={isActive ? "secondary" : "ghost"} size="sm" className="gap-2">
                       <Icon className="h-4 w-4" />
                       {item.label}
                     </Button>
                   </Link>
                 )
               })}
-            </div>
+            </nav>
           </div>
-
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-2">
-                <User className="h-4 w-4" />
-                <span className="hidden md:inline">{user?.firstName}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>
-                <div className="flex flex-col">
-                  <span className="font-medium">
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <User className="h-4 w-4" />
+                  <span className="hidden md:inline">{user?.firstName}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>
+                  <div>
                     {user?.firstName} {user?.lastName}
-                  </span>
-                  <span className="text-xs text-muted-foreground">{user?.email}</span>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => logout()} className="text-destructive">
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  </div>
+                  <div className="text-sm font-normal text-muted-foreground">{user?.email}</div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => logout()} className="text-destructive">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
-    </nav>
+    </header>
   )
 }

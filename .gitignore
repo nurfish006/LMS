@@ -9,6 +9,9 @@ pnpm-debug.log*
 .next/
 .next/cache/
 out/
+.local/
+.local/state/replit/
+
 
 # Build output
 dist/

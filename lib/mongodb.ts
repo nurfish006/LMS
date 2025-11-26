@@ -43,7 +43,7 @@ function getClientPromise(): Promise<MongoClient> {
 
 export async function getDatabase(): Promise<Db> {
   const client = await getClientPromise()
-  return client.db("woldia_els")
+  return client.db("Bahir Dar_els")
 }
 
 export const getDb = getDatabase

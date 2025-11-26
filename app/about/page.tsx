@@ -9,7 +9,7 @@ export default function AboutPage() {
         <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <GraduationCap className="h-8 w-8 text-primary" />
-            <span className="font-bold text-xl">Woldia University ELS</span>
+            <span className="font-bold text-xl">Bahir Dar University ELS</span>
           </Link>
           <Button variant="ghost" asChild>
             <Link href="/" className="gap-2">
@@ -21,11 +21,11 @@ export default function AboutPage() {
       </header>
 
       <section className="container mx-auto px-4 py-16 max-w-4xl">
-        <h1 className="text-4xl font-bold mb-8 text-center">About Woldia University E-Learning System</h1>
+        <h1 className="text-4xl font-bold mb-8 text-center">About Bahir Dar University E-Learning System</h1>
 
         <div className="prose prose-lg dark:prose-invert mx-auto mb-12">
           <p className="text-muted-foreground text-lg">
-            Woldia University E-learning System is an innovative educational platform designed to bridge the gap between
+            Bahir Dar University E-learning System is an innovative educational platform designed to bridge the gap between
             traditional learning and modern technology. Our system provides a comprehensive digital environment where
             students and faculty can collaborate, share resources, and engage in the learning process efficiently.
           </p>
@@ -37,7 +37,7 @@ export default function AboutPage() {
             <h3 className="text-xl font-semibold mb-2">Our Mission</h3>
             <p className="text-muted-foreground">
               To enhance the quality of education by providing accessible, interactive, and user-friendly digital tools
-              that support both teaching and learning processes at Woldia University.
+              that support both teaching and learning processes at Bahir Dar University.
             </p>
           </div>
           <div className="bg-card rounded-lg p-6 border">
@@ -75,7 +75,7 @@ export default function AboutPage() {
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Ready to get started?</h2>
           <p className="text-muted-foreground mb-6">
-            Join the Woldia University E-Learning community today and transform your educational experience.
+            Join the Bahir Dar University E-Learning community today and transform your educational experience.
           </p>
           <div className="flex gap-4 justify-center">
             <Button size="lg" asChild>
@@ -90,7 +90,7 @@ export default function AboutPage() {
 
       <footer className="border-t py-8 mt-auto">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
-          &copy; 2023 Woldia University. All rights reserved.
+          &copy; 2023 Bahir Dar University. All rights reserved.
         </div>
       </footer>
     </main>

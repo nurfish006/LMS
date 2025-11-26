@@ -1,4 +1,4 @@
-# Woldia University LMS
+# Bahir Dar University LMS
 
 A comprehensive Learning Management System built with Next.js 15, React 19, and MongoDB.
 

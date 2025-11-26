@@ -10,7 +10,7 @@ export default function HomePage() {
         <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <GraduationCap className="h-8 w-8 text-primary" />
-            <span className="font-bold text-xl">Woldia University ELS</span>
+            <span className="font-bold text-xl">Bahir Dar University ELS</span>
           </div>
           <div className="flex items-center gap-4">
             <ThemeToggle />
@@ -27,7 +27,7 @@ export default function HomePage() {
       <section className="container mx-auto px-4 py-24">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-balance">
-            Welcome to Woldia University E-Learning System
+            Welcome to Bahir Dar University E-Learning System
           </h1>
           <p className="text-lg text-muted-foreground mb-8 text-pretty">
             A comprehensive online learning platform designed to enhance education through digital innovation. Access
@@ -91,7 +91,7 @@ export default function HomePage() {
 
       <footer className="border-t py-8 mt-auto">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
-          &copy; 2023 Woldia University. All rights reserved.
+          &copy; 2023 Bahir Dar University. All rights reserved.
         </div>
       </footer>
     </main>

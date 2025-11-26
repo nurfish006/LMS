@@ -15,7 +15,7 @@ async function initAdmin() {
     const users = db.collection("users")
 
     // Check if admin already exists
-    const existingAdmin = await users.findOne({ email: "admin@woldia.edu.et" })
+    const existingAdmin = await users.findOne({ email: "admin@Bahir Dar.edu.et" })
 
     if (existingAdmin) {
       console.log("Admin user already exists")
@@ -26,7 +26,7 @@ async function initAdmin() {
     const hashedPassword = await bcrypt.hash("admin123", 10)
 
     const adminUser = {
-      email: "admin@woldia.edu.et",
+      email: "admin@Bahir Dar.edu.et",
       password: hashedPassword,
       role: "admin",
       firstName: "System",
@@ -37,7 +37,7 @@ async function initAdmin() {
 
     await users.insertOne(adminUser)
     console.log("Admin user created successfully!")
-    console.log("Email: admin@woldia.edu.et")
+    console.log("Email: admin@Bahir Dar.edu.et")
     console.log("Password: admin123")
     console.log("⚠️  Please change the password after first login!")
   } catch (error) {

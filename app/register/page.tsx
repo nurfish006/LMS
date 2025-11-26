@@ -71,7 +71,7 @@ export default function RegisterPage() {
             </Link>
           </div>
           <CardTitle className="text-2xl">Create Account</CardTitle>
-          <CardDescription>Register for Woldia University E-Learning System</CardDescription>
+          <CardDescription>Register for Bahir Dar University E-Learning System</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -100,7 +100,7 @@ export default function RegisterPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="student@woldia.edu.et"
+                placeholder="student@Bahir Dar.edu.et"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required

@@ -46,7 +46,7 @@ export default function LoginPage() {
             </Link>
           </div>
           <CardTitle className="text-2xl">Welcome Back</CardTitle>
-          <CardDescription>Login to access your Woldia University E-Learning account</CardDescription>
+          <CardDescription>Login to access your Bahir Dar University E-Learning account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -55,7 +55,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="student@woldia.edu.et"
+                placeholder="student@Bahir Dar.edu.et"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

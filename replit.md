@@ -1,7 +1,7 @@
-# Woldia University E-Learning System (WDUELS)
+# Bahir Dar University E-Learning System (WDUELS)
 
 ## Project Overview
-This is a comprehensive web-based Learning Management System (LMS) for Woldia University that enables students to access course materials, submit assignments, and communicate with instructors. The platform supports multiple user roles: students, teachers, department heads, and administrators.
+This is a comprehensive web-based Learning Management System (LMS) for Bahir Dar University that enables students to access course materials, submit assignments, and communicate with instructors. The platform supports multiple user roles: students, teachers, department heads, and administrators.
 
 ## Recent Changes
 **November 24, 2025 - Latest Session**
@@ -83,7 +83,7 @@ MONGODB_URI=<your-connection-string> node scripts/init-admin.js
 ```
 
 Default admin credentials:
-- Email: admin@woldia.edu.et
+- Email: admin@Bahir Dar.edu.et
 - Password: admin123
 
 ## Development

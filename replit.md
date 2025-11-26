@@ -1,4 +1,4 @@
-# Bahir Dar University E-Learning System (WDUELS)
+# Bahir Dar University E-Learning System (bduELS)
 
 ## Project Overview
 This is a comprehensive web-based Learning Management System (LMS) for Bahir Dar University that enables students to access course materials, submit assignments, and communicate with instructors. The platform supports multiple user roles: students, teachers, department heads, and administrators.

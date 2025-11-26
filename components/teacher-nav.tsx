@@ -34,7 +34,7 @@ export function TeacherNav() {
         <div className="flex items-center gap-6">
           <Link href="/teacher" className="flex items-center gap-2">
             <GraduationCap className="h-6 w-6 text-primary" />
-            <span className="font-semibold hidden sm:inline">WDU ELS</span>
+            <span className="font-semibold hidden sm:inline">bdu ELS</span>
           </Link>
           <div className="hidden md:flex items-center gap-1">
             {navItems.map((item) => {

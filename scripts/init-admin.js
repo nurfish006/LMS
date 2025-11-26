@@ -1,7 +1,7 @@
 const { MongoClient } = require("mongodb")
 const bcrypt = require("bcryptjs")
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/wduels"
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/bduels"
 
 async function initAdmin() {
   console.log("Connecting to MongoDB...")
